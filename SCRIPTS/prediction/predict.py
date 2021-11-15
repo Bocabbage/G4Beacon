@@ -2,14 +2,9 @@
 # -*- coding: utf-8 -*-
 # Update date: 2021/09/28
 # Author: Zhuofan Zhang
-from numpy.core.defchararray import index
-from pandas.io.parsers import read_csv
-from xgboost import XGBClassifier
-from lightgbm import LGBMClassifier
 import os
 import json
 import numpy as np
-import pandas as pd
 import argparse
 import joblib
 import matplotlib
@@ -98,18 +93,9 @@ def eval_result(outdir, y, y_pred, name):
 
 
 parser = argparse.ArgumentParser()
-# parser.add_argument('--vg4seq', type=str, default=None, help="Positive test-set seq data.")
-# parser.add_argument('--ug4seq', type=str, default=None, help="Negative test-set seq data.")
-# parser.add_argument('--vg4atac', type=str, default=None, help="Positive test-set env data.")
-# parser.add_argument('--ug4atac', type=str, default=None, help="Negative test-set env data.")
-# parser.add_argument('--vg4bs', type=str, default=None, help="Positive test-set env data.")
-# parser.add_argument('--ug4bs', type=str, default=None, help="Negative test-set env data.")
 parser.add_argument('--json', type=str, help="Input predict config file.")
 parser.add_argument('--extend', type=int, default=None,
                     help="Seq extend parameter: select [mid-extend, mid+extend] from seq-features.")
-# parser.add_argument('--model', type=str, default="lightGBM", help="Xgboost/lightGBM.")
-# parser.add_argument('--checkpoint', type=str, help="Model checkpoint PATH.")
-# parser.add_argument('--outdir', type=str, default='./', help="Eval result output directory.")
 
 args = parser.parse_args()
 

@@ -1,6 +1,6 @@
 #! /usr/bin python
 # -*- coding: utf-8 -*-
-# Update date: 2021/10/12(unfinished: valiation part)
+# Update date: 2021/11/10(unfinished: valiation part)
 # Author: Zhuofan Zhang
 import os
 import json
@@ -8,6 +8,7 @@ import argparse
 from joblib import dump
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
+from imbalanced_ensemble.ensemble import SelfPacedEnsembleClassifier
 from dataset import g4SeqEnv
 
 
@@ -49,18 +50,28 @@ if args.mode == 'train':
             None
         )
 
-        model_param = config['model_config']
         model = config['model']
+        model_param = config['model_config']
         if model == 'Xgboost':
             clf = XGBClassifier()
         elif model == 'lightGBM':
+            model_param = config['model_config']
             clf = LGBMClassifier()
+        elif model == 'SPE':
+            basic_model = config['basic_model']
+            if basic_model == 'lightGBM':
+                basic_clf = LGBMClassifier()
+                basic_model_config = config['basic_model_config']
+                basic_clf.set_params(**basic_model_config)
+                clf = SelfPacedEnsembleClassifier(base_estimator=basic_clf)
+            else:  # Default: DecisionTree
+                clf = SelfPacedEnsembleClassifier()
         else:
             clf = None  # Will raise an error
-        clf.set_params(**model_param)
 
         train_features = g4_dataset.Features
         train_labels = g4_dataset.Labels
+        clf.set_params(**model_param)
         clf.fit(train_features.to_numpy(), train_labels)
 
         # Save models

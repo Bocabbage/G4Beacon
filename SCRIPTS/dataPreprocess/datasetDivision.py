@@ -2,7 +2,13 @@
 # -*- coding: utf-8 -*-
 # Description: divide feature files to train/test set
 # Author: Zhuofan Zhang
-# Update date: 2021/10/11
+# Update date: 2021/11/10
+
+#### SAMPLING CONFIG
+# under  : undersampling the neg-samples to get small balanced training-set
+# over   : oversampling(resampling) the pos-samples to get big balanced training-set
+# smote  : use SMOTE to oversampling the pos-samples to get big balanced training-set
+# trivial: keep the imbalanced training-set without preprocessing [can be used by imbalanced-ensemble methods]
 
 #### INPUT JSON FORMAT
 # @origin_data_dir
@@ -16,8 +22,8 @@ import argparse
 import pandas as pd
 import json
 from commonUtils import run_shell_cmd
-
-from pandas.core.algorithms import mode
+from imblearn.over_sampling import SMOTE
+# from pandas.core.algorithms import mode
 
 
 def join_path(firstpath, secondpath):
@@ -111,6 +117,8 @@ for config in json_data['config_lists']:
         with open(config['pos_shuffle_list'], 'w+') as ofile:
             json.dump(pos_shuffle_list, ofile)
         train_pos_idx = pos_shuffle_list[:(pos_size // 2)]
+
+        # Oversampling for positive samples of train-set
         if mode == 'over':
             train_pos_idx = random.choices(train_pos_idx, k=(neg_size // 2))
             with open(os.path.join(outdir, "pos_oversampling_idx_list.json"), 'w+') as ofile:
@@ -122,9 +130,15 @@ for config in json_data['config_lists']:
         train_pos_seq = origin_data_csv[0].iloc[train_pos_idx]
         train_pos_atac = origin_data_csv[1].iloc[train_pos_idx]
         train_pos_bs = origin_data_csv[2].iloc[train_pos_idx]
-        train_pos_seq.to_csv(os.path.join(outdir, f"trainPos.{mode}.seq.csv"), header=False, index=False)
-        train_pos_atac.to_csv(os.path.join(outdir, f"trainPos.{mode}.atac.csv"), header=False, index=False)
-        train_pos_bs.to_csv(os.path.join(outdir, f"trainPos.{mode}.bs.csv"), header=False, index=False)
+
+        if mode != 'smote':
+            # Special situation: SMOTE-oversampling
+            # The smote need negative samples to work together
+            # So here we only output train_pos data in undersampling or oversampling situation.
+            # [!!!The smote output case is at the end of this script]
+            train_pos_seq.to_csv(os.path.join(outdir, f"trainPos.{mode}.seq.csv"), header=False, index=False)
+            train_pos_atac.to_csv(os.path.join(outdir, f"trainPos.{mode}.atac.csv"), header=False, index=False)
+            train_pos_bs.to_csv(os.path.join(outdir, f"trainPos.{mode}.bs.csv"), header=False, index=False)
 
         # positive samples of test-set
         test_pos_seq = origin_data_csv[0].iloc[test_pos_idx]
@@ -166,9 +180,9 @@ for config in json_data['config_lists']:
         test_neg_bs.to_csv(os.path.join(outdir, f"testNeg.{mode}.bs.csv"), header=False, index=False)
 
     # negative samples of training-set
-    if mode == 'over':
+    if mode != 'under':  # oversampling/trivial/smote
         train_neg_idx = neg_shuffle_list[:(neg_size // 2)]
-    elif mode == 'under':
+    else:
         train_neg_idx = neg_shuffle_list[:(pos_size // 2)]
     if filt_list:
         filt_neg_idx = []
@@ -189,3 +203,25 @@ for config in json_data['config_lists']:
     train_neg_seq.to_csv(os.path.join(outdir, f"trainNeg.{mode}.seq.csv"), header=False, index=False)
     train_neg_atac.to_csv(os.path.join(outdir, f"trainNeg.{mode}.atac.csv"), header=False, index=False)
     train_neg_bs.to_csv(os.path.join(outdir, f"trainNeg.{mode}.bs.csv"), header=False, index=False)
+
+    # SMOTE-oversampling training-set output
+    if mode == 'smote':
+        sm = SMOTE(random_state=seed)
+        train_seq = pd.concat([train_pos_seq, train_neg_seq])
+        train_atac = pd.concat([train_pos_atac, train_neg_atac])
+        train_bs = pd.concat([train_pos_bs, train_neg_bs])
+        train_feature = pd.concat([train_seq, train_atac, train_bs], axis=1)
+        train_label = [1 for i in range(len(train_pos_idx))] + [0 for i in range(len(train_neg_idx))]
+        train_feature_sm, train_label_sm = sm.fit_resample(train_feature.to_numpy(), train_label)
+        train_feature_sm = pd.DataFrame(train_feature_sm)
+        pos_idx = []
+        for idx in range(len(train_label_sm)):
+            if train_label_sm[idx] == 1:
+                pos_idx.append(idx)
+        train_pos_seq_sm = train_feature_sm.iloc[pos_idx, :train_seq.shape[1]]
+        train_pos_atac_sm = train_feature_sm.iloc[pos_idx, train_seq.shape[1]:train_seq.shape[1] + train_atac.shape[1]]
+        train_pos_bs_sm = train_feature_sm.iloc[pos_idx, train_seq.shape[1] + train_atac.shape[1]:]
+
+        train_pos_seq_sm.to_csv(os.path.join(outdir, f"trainPos.{mode}.seq.csv"), header=False, index=False)
+        train_pos_atac_sm.to_csv(os.path.join(outdir, f"trainPos.{mode}.atac.csv"), header=False, index=False)
+        train_pos_bs_sm.to_csv(os.path.join(outdir, f"trainPos.{mode}.bs.csv"), header=False, index=False)
