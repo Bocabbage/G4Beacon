@@ -1,6 +1,6 @@
 #! /usr/bin python
 # -*- coding: utf-8 -*-
-# Update date: 2021/11/17(unfinished: valiation part)
+# Update date: 2021/11/10(unfinished: valiation part)
 # Author: Zhuofan Zhang
 import os
 import json
@@ -42,14 +42,12 @@ if args.mode == 'train':
         vg4bs = join_path(dataset_dir, config['vg4bs'])
         ug4bs = join_path(dataset_dir, config['ug4bs'])
 
-        norm = config['normalization']
-
         # Load Data
         g4_dataset = g4SeqEnv(
             vg4seq, ug4seq,
             vg4atac, ug4atac,
             vg4bs, ug4bs,
-            norm
+            None
         )
 
         model = config['model']
@@ -59,12 +57,6 @@ if args.mode == 'train':
         elif model == 'lightGBM':
             model_param = config['model_config']
             clf = LGBMClassifier()
-
-            if 'categorical_feature' in config.keys():
-                start, end = config['categorical_feature']
-                categorical_feature_idx = [i for i in range(start, end)]
-                model_param['categorical_feature'] = categorical_feature_idx
-
         elif model == 'SPE':
             basic_model = config['basic_model']
             if basic_model == 'lightGBM':

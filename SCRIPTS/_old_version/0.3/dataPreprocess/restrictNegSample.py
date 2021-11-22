@@ -1,26 +1,23 @@
 #! usr/bin python
 # -*- coding: utf-8 -*-
-# Description: preprocess for g4-seq raw-data
 # Author: Zhuofan Zhang
-# Update date: 2021/07/30
-import os
+# Update date: 2021/09/25
 import re
 import random
 import argparse
-# import torch
+from commonUtils import run_shell_cmd
 from Bio import SeqIO
-# from torch.nn.functional import one_hot
-from commonUtils import run_shell_cmd, running_log
 
 _transformDict = {'A': 't', 'T': 'a', 'C': 'g', 'G': 'c'}
 _transTab = str.maketrans('ACGT', '0123')
 
 
-def _seq_save_nums(seqFile: str,
-                   oseqFile: str,
-                   obedFile: str,
-                   extend: int,
-                   reverse: bool) -> None:
+def _seq_save_onehot(seqFile: str,
+                     oseqFile: str,
+                     obedFile: str,
+                     extend: int,
+                     againExtend: int,
+                     reverse: bool) -> None:
     r'''
         Save the extracted sequences of [mid-extend, mid+extend] to seqFile
         and save the corresponding origin entries to the obedFile.
@@ -37,7 +34,7 @@ def _seq_save_nums(seqFile: str,
                 for record in SeqIO.parse(ifile, 'fasta'):
                     seqId, seq = str(record.id), str(record.seq).upper()
                     chrom, start, end = getPositionRe.split(seqId)
-                    originStart, originEnd = int(start) + extend, int(end) - extend  # Get origin g4-seq entry
+                    originStart, originEnd = int(start) + againExtend + extend, int(end) - againExtend - extend  # Get origin g4-seq entry
 
                     seq = seq[len(seq) // 2 - extend:len(seq) // 2 + extend]
                     if 'N' in seq:
@@ -84,60 +81,50 @@ def _seq_save_nums(seqFile: str,
             ofile.write(writeline)
 
 
-def bed_filt_outliners(filePath: str, minSize: int, maxSize: int) -> None:
-    r'''
-        Wash out the entries in bed-file whose length
-        is lower than minSize or higher than maxSize.
-    '''
-    filePrename, fileSuffix = os.path.splitext(filePath)
-    ofilePath = filePrename + ".clean_min{}max{}.".format(minSize, maxSize) + fileSuffix
-    cmd = (("awk 'BEGIN{{ min={min};max={max} }}"
-            "{{ len=$3-$2; if(len > min && len < max){{print $0;}} }}' "
-            "{ifile} > {ofile}").format(
-                min=minSize,
-                max=maxSize,
-                ifile=filePath,
-                ofile=ofilePath))
-    run_shell_cmd(cmd)
+parser = argparse.ArgumentParser()
+parser.add_argument('--neg', type=str, help="Input negative [origin/extend] bed.")
+parser.add_argument('--chip', type=str, help="positive g4 chip-seq bed.")
+parser.add_argument('--obed', type=str, help="Output filted negative bed.")
+parser.add_argument('--oseq', type=str, help="Output filted negative seqfile.")
+parser.add_argument('--extend', type=int, help="original extend of sample.")
+parser.add_argument('-F', type=float, help="fraction of overlap threshold. Positive frac or negative int.")
+parser.add_argument('--fi', type=str, help="Reference genome fasta file.")
+parser.add_argument('--reverse', action="store_true", default=False, dest="reverse")
+args = parser.parse_args()
 
+randId = random.randint(0, 4000)
+negFile = args.neg
+chipFile = args.chip
+outBedFile = args.obed
+outSeqFile = args.oseq
+extend = args.extend
+frac = args.F
+ref = args.fi
+reverse = args.reverse
 
-def g4_sequence_extract(bedFile: str,
-                        oseqFile: str,
-                        obedFile: str,
-                        extend: str,
-                        refGenomeFile: str,
-                        reverse: bool) -> None:
-    r'''
-        Take raw g4-seq file(name) in BED format as input,
-        extract the sequence from the location
-        [chr, mid-extend, mid+extend] and save them in file
-        with encoding by ONE-HOT.
-    '''
-    randId = random.randint(0, 4000)
-    tmpBedFile = "{}tmp.extendG4Rigion1.bed".format(randId)
+tmpExtendFile = f"./tmp{randId}.bed"
+tmpResultFile = f'./tmp{randId}.result.bed'
+tmpSeqFile = f"./tmp{randId}.seq.fa"
 
-    # Extend and rm 'chrM'
-    run_shell_cmd(("grep -v 'chrM' {bedFile} | "
-                   "awk 'BEGIN{{ extend={extend};OFS=\"\t\" }}"
-                   "{{ if($2 > extend){{print $1, $2-extend, $3+extend;}} }}' "
-                   "> {tmpBedFile}").format(extend=extend, bedFile=bedFile, tmpBedFile=tmpBedFile))
+if frac > 0:
+    run_shell_cmd(f"awk 'BEGIN{{OFS=\"\\t\"}}"
+                  f"{{print $1, $2-{extend}, $3+{extend}}}' {negFile} > {tmpExtendFile}")
+    run_shell_cmd(f"bedtools intersect -F {frac} -a {tmpExtendFile} -b {chipFile} -v > {tmpResultFile}")
+    run_shell_cmd(f"bedtools getfasta -fi {ref} -bed {tmpResultFile} > {tmpSeqFile}")
+    _seq_save_onehot(tmpSeqFile, outSeqFile, outBedFile, extend, 0, reverse)
 
-    # Extract sequence
-    tmpFaFile = "{}tmp.extendG4Rigion2.fa".format(randId)
-    run_shell_cmd("bedtools getfasta -fi {} -bed {} > {}".format(refGenomeFile, tmpBedFile, tmpFaFile))
-    _seq_save_nums(tmpFaFile, oseqFile, obedFile, extend, reverse)
+    run_shell_cmd(f"rm ./tmp{randId}*")
 
-    run_shell_cmd("rm {} {}".format(tmpBedFile, tmpFaFile))
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-i', type=str, help="Input g4 raw bed file.")
-    parser.add_argument('-oseq', type=str, help="Output g4-extend sequence file (One-Hot encoded).")
-    parser.add_argument('-obi', type=str, help="Bed file of sequence extract valid entries.")
-    parser.add_argument('-fi', type=str, help="Reference sequence file.")
-    parser.add_argument('--extend', type=int, help="Get [start - extend, end + extend] entries.")
-    parser.add_argument('--reverse', action="store_true", default=False, dest="reverse")
-    args = parser.parse_args()
-
-    g4_sequence_extract(args.i, args.oseq, args.obi, args.extend, args.fi, args.reverse)
+elif frac < 0:
+    againExtend = abs(int(frac))
+    run_shell_cmd((f"awk 'BEGIN{{OFS=\"\\t\"}}"
+                   f"{{if($2-{extend}-{againExtend} > 0)"
+                   f"{{print $1, $2-{againExtend}-{extend}, $3+{againExtend}+{extend}}}}}'"
+                   f" {negFile} > {tmpExtendFile}"))
+    run_shell_cmd(f"bedtools intersect -a {tmpExtendFile} -b {chipFile} -v > {tmpResultFile}")
+    run_shell_cmd(f"bedtools getfasta -fi {ref} -bed {tmpResultFile} > {tmpSeqFile}")
+    _seq_save_onehot(tmpSeqFile, outSeqFile, outBedFile, extend, againExtend, reverse)
+    run_shell_cmd(f"rm ./tmp{randId}*")
+else:
+    print("Frac can't be 0.")
+    exit(-1)

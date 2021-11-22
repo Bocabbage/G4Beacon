@@ -94,8 +94,10 @@ def eval_result(outdir, y, y_pred, name):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--json', type=str, help="Input predict config file.")
-args = parser.parse_args()
+parser.add_argument('--extend', type=int, default=None,
+                    help="Seq extend parameter: select [mid-extend, mid+extend] from seq-features.")
 
+args = parser.parse_args()
 
 roc_fig, roc_ax = plt.subplots(figsize=(10, 10))
 roc_ax.plot([0, 1], [0, 1], linestyle='--', lw=2, color='r', label='Chance', alpha=0.8)
@@ -119,13 +121,11 @@ for data in jsonData['data_list']:
     ug4atac = join_path(datasetDir, data['ug4atac'])
     vg4bs = join_path(datasetDir, data['vg4bs'])
     ug4bs = join_path(datasetDir, data['ug4bs'])
-    norm = data["normalization"]
-
     g4Dataset = g4SeqEnv(
         vg4seq, ug4seq,
         vg4atac, ug4atac,
         vg4bs, ug4bs,
-        norm
+        args.extend
     )
     testData = g4Dataset.Features
     testLabels = g4Dataset.Labels

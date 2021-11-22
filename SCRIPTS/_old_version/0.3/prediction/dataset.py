@@ -4,7 +4,7 @@
 # Author: Zhuofan Zhang
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import normalize
+from sklearn.preprocessing import Normalizer
 
 
 class g4SeqEnv:
@@ -15,7 +15,7 @@ class g4SeqEnv:
                  ug4ATAC: str = None,
                  vg4BS: str = None,
                  ug4BS: str = None,
-                 normalization: bool = False):
+                 extend: int = None):
 
         if vg4Seq:
             vg4seqFeatures = pd.read_csv(vg4Seq, dtype='a', header=None)
@@ -23,11 +23,11 @@ class g4SeqEnv:
             pSampleNums = vg4seqFeatures.shape[0]
             nSampleNums = ug4seqFeatures.shape[0]
 
-            # if extend:
-            #     mid = vg4seqFeatures.shape[1] // 2
-            #     vg4seqFeatures = vg4seqFeatures.iloc[:, mid - extend:mid + extend]
-            #     ug4seqFeatures = ug4seqFeatures.iloc[:, mid - extend:mid + extend]
-            seqFeatures = pd.concat([vg4seqFeatures, ug4seqFeatures], ignore_index=True)
+            if extend:
+                mid = vg4seqFeatures.shape[1] // 2
+                vg4seqFeatures = vg4seqFeatures.iloc[:, mid - extend:mid + extend]
+                ug4seqFeatures = ug4seqFeatures.iloc[:, mid - extend:mid + extend]
+            seqFeatures = pd.concat([vg4seqFeatures, ug4seqFeatures])
         else:
             seqFeatures = None
 
@@ -36,9 +36,7 @@ class g4SeqEnv:
             ug4atacFeatures = pd.read_csv(ug4ATAC, dtype='a', header=None)
             pSampleNums = vg4atacFeatures.shape[0]
             nSampleNums = ug4atacFeatures.shape[0]
-            atacFeatures = pd.concat([vg4atacFeatures, ug4atacFeatures], ignore_index=True)
-            if normalization:
-                atacFeatures = pd.DataFrame(normalize(atacFeatures, 'l2'))
+            atacFeatures = pd.concat([vg4atacFeatures, ug4atacFeatures])
         else:
             atacFeatures = None
 
@@ -47,9 +45,7 @@ class g4SeqEnv:
             ug4bsFeatures = pd.read_csv(ug4BS, dtype='a', header=None)
             pSampleNums = vg4bsFeatures.shape[0]
             nSampleNums = ug4bsFeatures.shape[0]
-            bsFeatures = pd.concat([vg4bsFeatures, ug4bsFeatures], ignore_index=True)
-            if normalization:
-                bsFeatures = pd.DataFrame(normalize(bsFeatures, 'l2'))
+            bsFeatures = pd.concat([vg4bsFeatures, ug4bsFeatures])
         else:
             bsFeatures = None
 
@@ -58,7 +54,7 @@ class g4SeqEnv:
         for feature in featureList:
             if feature is not None:
                 if self.Features is not None:
-                    self.Features = pd.concat([self.Features, feature], axis=1, ignore_index=True)
+                    self.Features = pd.concat([self.Features, feature], axis=1)
                 else:
                     self.Features = feature
 
@@ -70,7 +66,7 @@ class g4SeqEnv:
             #     self.envFeatures = Normalizer.fit_transform(self.envFeatures)
 
             # self.Labels = [1 for i in range(vg4seqFeatures.shape[0])] + [0 for i in range(ug4seqFeatures.shape[0])]
-        self.Labels = np.array([1 for i in range(pSampleNums)] + [0 for i in range(nSampleNums)])
+            self.Labels = np.array([1 for i in range(pSampleNums)] + [0 for i in range(nSampleNums)])
 
     def __len__(self):
         return len(self.Labels)

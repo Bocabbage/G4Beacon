@@ -53,13 +53,13 @@ if __name__ == '__main__':
         os.makedirs(outplot_dir)
 
     for config in json_data['config_list']:
-        g4bed = join_path(data_dir, config['g4bed'])
-        envbw = join_path(data_dir, config['envbw'])
+        g4bed = os.path.join(data_dir, config['g4bed'])
+        envbw = os.path.join(data_dir, config['envbw'])
         thread = config['thread']
         extend = config['extend']
         binsize = config['binsize']
-        outcsv = join_path(outcsv_dir, config['outcsv'])
-        outplot = join_path(outplot_dir, config['outplot'])
+        outcsv = os.path.join(outcsv_dir, config['outcsv'])
+        outplot = os.path.join(outplot_dir, config['outplot'])
 
         rand_id = random.randint(0, 9280)
         tmp_file_plot = f"{rand_id}_forplot"

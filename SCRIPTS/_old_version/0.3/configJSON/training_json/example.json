@@ -1,0 +1,41 @@
+{
+    "dataset_dir": "Dir contains sample feature files",
+    "config_list": [
+        {
+            "name": "CONFIG-NAME1",
+            "vg4seq": "file-name or null",
+            "ug4seq": "file-name or null",
+            "vg4atac": "file-name or null",
+            "ug4atac": "file-name or null",
+            "vg4bs": "file-name or null",
+            "ug4bs": "file-name or null",
+            "model": "lightGBM/Xgboost/...",
+            "model_config":
+            {
+                "seed": null,
+                "learning_rate": null,
+                "n_estimators": null,
+                "objective": null
+            }
+        },
+        {
+            "name": "CONFIG-NAME2",
+            "vg4seq": "file-name or null",
+            "ug4seq": "file-name or null",
+            "vg4atac": "file-name or null",
+            "ug4atac": "file-name or null",
+            "vg4bs": "file-name or null",
+            "ug4bs": "file-name or null",
+            "model": "lightGBM/Xgboost/...",
+            "model_config":
+            {
+                "seed": null,
+                "learning_rate": null,
+                "n_estimators": null,
+                "objective": null
+            }
+        }
+    ],
+    "out_dir": "output training-checkpoint dir",
+    "annotation": null
+}

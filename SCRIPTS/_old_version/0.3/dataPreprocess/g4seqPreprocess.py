@@ -16,11 +16,11 @@ _transformDict = {'A': 't', 'T': 'a', 'C': 'g', 'G': 'c'}
 _transTab = str.maketrans('ACGT', '0123')
 
 
-def _seq_save_nums(seqFile: str,
-                   oseqFile: str,
-                   obedFile: str,
-                   extend: int,
-                   reverse: bool) -> None:
+def _seq_save_onehot(seqFile: str,
+                     oseqFile: str,
+                     obedFile: str,
+                     extend: int,
+                     reverse: bool) -> None:
     r'''
         Save the extracted sequences of [mid-extend, mid+extend] to seqFile
         and save the corresponding origin entries to the obedFile.
@@ -125,7 +125,7 @@ def g4_sequence_extract(bedFile: str,
     # Extract sequence
     tmpFaFile = "{}tmp.extendG4Rigion2.fa".format(randId)
     run_shell_cmd("bedtools getfasta -fi {} -bed {} > {}".format(refGenomeFile, tmpBedFile, tmpFaFile))
-    _seq_save_nums(tmpFaFile, oseqFile, obedFile, extend, reverse)
+    _seq_save_onehot(tmpFaFile, oseqFile, obedFile, extend, reverse)
 
     run_shell_cmd("rm {} {}".format(tmpBedFile, tmpFaFile))
 
