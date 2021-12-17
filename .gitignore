@@ -16,4 +16,4 @@ __pycache__
 
 #### Ignore all the config-files except the example.json for each configJSON dir ####
 *.json
-!example.json
+!*example.json

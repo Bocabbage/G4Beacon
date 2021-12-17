@@ -1,6 +1,6 @@
 #! /usr/bin python
 # -*- coding: utf-8 -*-
-# Update date: 2021/08/10
+# Update date: 2021/12/13
 # Author: Zhuofan Zhang
 import numpy as np
 import pandas as pd
@@ -15,7 +15,24 @@ class g4SeqEnv:
                  ug4ATAC: str = None,
                  vg4BS: str = None,
                  ug4BS: str = None,
-                 normalization: bool = False):
+                 normalization: bool = False,
+                 **kwformat_input):
+        r'''
+            Take feature-file-name(s) as input, load and preprocess
+            to construct feature[pandas]/label[np.array] format objects.
+
+            Note: if use **kwformat_input param, the former input param(s) will be ignored
+                  except the normalization setting. Usage example of this param is in param_tuning_cv.py.
+        '''
+        if kwformat_input:
+            # fix me: it's so dirty
+            # Maybe use locals(), but it's dangerous
+            vg4Seq = kwformat_input['vg4seq']
+            ug4Seq = kwformat_input['ug4seq']
+            vg4ATAC = kwformat_input['vg4atac']
+            ug4ATAC = kwformat_input['ug4atac']
+            vg4BS = kwformat_input['vg4bs']
+            ug4BS = kwformat_input['ug4bs']
 
         if vg4Seq:
             vg4seqFeatures = pd.read_csv(vg4Seq, dtype='a', header=None)

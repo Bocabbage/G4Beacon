@@ -1,0 +1,24 @@
+{
+    "dataset_dir": "ORIGIN_DATA_INPUT_FILES_DIR",
+    "output_dir": "RESULTS_OUTPUT_DIR",
+    "kfold": "NUMBER_OF_FOLD(K)",
+    "random_state": 42,
+    "sampling_flag": "undersampling/oversampling",
+    "model": "lightGBM",
+    "categorical_feature_idx": null,
+    "files":
+    {
+        "vg4seq": null,
+        "ug4seq": null,
+        "vg4atac": null,
+        "ug4atac": null,
+        "vg4bs": null,
+        "ug4bs": null
+    },
+    "params_gird":
+    {
+        "param-name": ["param1", "param2", "..."]
+    },
+    "annotation": "ANNOTATION"
+
+}

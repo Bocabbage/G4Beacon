@@ -1,23 +1,16 @@
 #! /usr/bin python
 # -*- coding: utf-8 -*-
-# Update date: 2021/11/17(unfinished: valiation part)
+# Update date: 2021/12/10
 # Author: Zhuofan Zhang
 import os
 import json
 import argparse
 from joblib import dump
 from xgboost import XGBClassifier
-from lightgbm import LGBMClassifier
+from lightgbm import LGBMClassifier, Dataset
 from imbalanced_ensemble.ensemble import SelfPacedEnsembleClassifier
 from dataset import g4SeqEnv
-
-
-def join_path(firstpath, secondpath):
-    try:
-        path = os.path.join(firstpath, secondpath)
-    except TypeError:
-        path = None
-    return path
+from commonUtils import join_path
 
 
 parser = argparse.ArgumentParser()
@@ -60,10 +53,11 @@ if args.mode == 'train':
             model_param = config['model_config']
             clf = LGBMClassifier()
 
-            if 'categorical_feature' in config.keys():
-                start, end = config['categorical_feature']
-                categorical_feature_idx = [i for i in range(start, end)]
-                model_param['categorical_feature'] = categorical_feature_idx
+            # Use Dataset API
+            lgbm_dataset = Dataset(
+                g4_dataset.Features.to_numpy(),
+                label=g4_dataset.Labels
+            )
 
         elif model == 'SPE':
             basic_model = config['basic_model']
@@ -77,10 +71,23 @@ if args.mode == 'train':
         else:
             clf = None  # Will raise an error
 
+        if 'categorical_feature' in config.keys():
+            # Old version (for 20211118_01train_full-under.json):
+            # model_param['categorical_feature'] = categorical_feature_idx
+            # clf.set_params(**model_param)
+            start, end = config['categorical_feature']
+            categorical_feature_idx = [i for i in range(start, end)]
+        else:
+            categorical_feature_idx = 'auto'
+
         train_features = g4_dataset.Features
         train_labels = g4_dataset.Labels
         clf.set_params(**model_param)
-        clf.fit(train_features.to_numpy(), train_labels)
+        clf.fit(
+            train_features.to_numpy(),
+            train_labels,
+            categorical_feature=categorical_feature_idx
+        )
 
         # Save models
         name = config['name']

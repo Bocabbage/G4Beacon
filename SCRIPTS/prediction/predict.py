@@ -12,15 +12,8 @@ import matplotlib.pyplot as plt
 from dataset import g4SeqEnv
 from sklearn.metrics import accuracy_score, recall_score, precision_score, auc, roc_curve
 from sklearn.metrics import precision_recall_curve, average_precision_score, PrecisionRecallDisplay, RocCurveDisplay
+from commonUtils import join_path
 matplotlib.use('Agg')
-
-
-def join_path(firstpath, secondpath):
-    try:
-        path = os.path.join(firstpath, secondpath)
-    except TypeError:
-        path = None
-    return path
 
 
 def plot_roc(ax, y, y_pred, name):
@@ -77,7 +70,7 @@ def get_fp_fn(outdir, features, y, y_pred, name):
 
 def eval_result(outdir, y, y_pred, name):
     y_pred = np.argmax(y_pred, axis=1)
-    print("{}, {}".format(len(y), len(y_pred)))
+    # print("{}, {}".format(len(y), len(y_pred)))
     recall = recall_score(y, y_pred)
     precision = precision_score(y, y_pred)
     accuracy = accuracy_score(y, y_pred)
