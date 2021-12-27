@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # Update date: 2021/12/17
 # Author: Zhuofan Zhang
+import sys
 import json
 import argparse
 import numpy as np
@@ -68,6 +69,7 @@ for i, key in enumerate(params_grid.keys()):
             xlabels,
         )
         ax.set_title(f"{criteria} results for {key} tuning", size=10)
-    # Don't show the last empty subplot
-    axes[-1, -1].axis('off')
+
+    axes[-1, -1].axis('off')  # Don't show the last empty subplot
+    fig.suptitle(f"CV results for {key} tuning", fontsize=14)
     fig.savefig(join_path(work_dir, f"{key}-tuning-boxplots.png"))

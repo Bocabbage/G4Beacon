@@ -12,7 +12,6 @@ from imbalanced_ensemble.ensemble import SelfPacedEnsembleClassifier
 from dataset import g4SeqEnv
 from commonUtils import join_path
 
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', type=str, default='train', help="train/validation mode.")
 parser.add_argument('--json', type=str, help="training configuration json file.")

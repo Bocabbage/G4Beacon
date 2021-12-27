@@ -11,14 +11,7 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import accuracy_score, recall_score, precision_score, auc, roc_curve, precision_recall_curve
 from lightgbm import LGBMClassifier
 from dataset import g4SeqEnv
-
-
-def join_path(firstpath: str, secondpath: str) -> str:
-    try:
-        path = os.path.join(firstpath, secondpath)
-    except TypeError:
-        path = None
-    return path
+from commonUtils import join_path
 
 
 def balance_sampling(pos_idx, neg_idx,

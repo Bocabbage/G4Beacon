@@ -10,7 +10,7 @@ import argparse
 # import torch
 from Bio import SeqIO
 # from torch.nn.functional import one_hot
-from commonUtils import run_shell_cmd, running_log
+from commonUtils import run_shell_cmd  # , running_log
 
 _transformDict = {'A': 't', 'T': 'a', 'C': 'g', 'G': 'c'}
 _transTab = str.maketrans('ACGT', '0123')
