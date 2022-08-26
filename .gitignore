@@ -5,6 +5,10 @@
 /3.EXPERIMENTS
 /STATUS
 /utils
+/softwares
+**/recipes
+**/network
+**/workflow_scripts
 
 #### Ignore all the log file ####
 *.log
@@ -17,3 +21,16 @@ __pycache__
 #### Ignore all the config-files except the example.json for each configJSON dir ####
 *.json
 !*example.json
+
+#### Ignore aborted feature-engineering methods
+fftGet(aborted).py
+
+#### Ignore all the pics ####
+*.png
+!*fig1.png
+
+#### Ignore util-shell-script ####
+*.sh
+
+#### Ignore all the log file ####
+*.log
