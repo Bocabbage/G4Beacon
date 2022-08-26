@@ -33,6 +33,8 @@ if args.mode == 'train':
         ug4atac = join_path(dataset_dir, config['ug4atac'])
         vg4bs = join_path(dataset_dir, config['vg4bs'])
         ug4bs = join_path(dataset_dir, config['ug4bs'])
+        vg4atacFd = join_path(dataset_dir, config['vg4atac-fd'])
+        ug4atacFd = join_path(dataset_dir, config['ug4atac-fd'])
 
         norm = config['normalization']
 
@@ -40,6 +42,7 @@ if args.mode == 'train':
         g4_dataset = g4SeqEnv(
             vg4seq, ug4seq,
             vg4atac, ug4atac,
+            vg4atacFd, ug4atacFd,
             vg4bs, ug4bs,
             norm
         )

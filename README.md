@@ -1,23 +1,24 @@
-# in-vivo G4-DNA prediction
+# G4Catcher: An in vivo G4 prediction method using chromatin and sequence information
 
-### I. Old-version Log
+## I. Introduction
 
-- version 0.1: Use narrowPeak from ATAC-seq as chromatin accessibility features
+G-quadruplex (G4) is a kind of the non-canonical secondary structure which usually formed in guanine-rich regions. G4 detection method based on next-generation sequencing technology allows profiling G4s in vitro on a genome-wide scale, which imputed numerous G4 entries on the human genome. However, recent G4 ChIP-seq technology established for in vivo G4 detection revealed that the amount of G4s in living cells is substantially lower. In vivo G4 sites can provide more convincing support for exploring the biological function of G4s, as these sites are direct evidence for the presence of folded G4s. However, there are some limitations to the G4-probing methods, for example, they are high-cost and difficult to operate. We proposed G4Catcher, a new machine-learning approach to predict whether in vitro G4 entries can actually fold into quadruplex structures in a given cell type, by integrating the chromatin accessibility profile and the surrounding sequence of G4 entries.
 
-- version 0.2: Try K-mer features; Add SMOTE-oversampling experiment
+<img src="./suppl-pics/fig1.png" alt="fig1" style="zoom:80%;" />
 
-- version 0.3:  Use JSON as the experiment config input and log; Use signal/fold-change files as chromatin accessibility features. [Last updated: 2021/11/15]
+## II. Code Structure
 
-  <u>The above versions split dataset into 2 parts: train/test and use Precision/Recall/AUC/AUPRC as criterions.</u>
+-  `/SCRIPT`
+  - `dataPreprocess`: the python-scripts for data preprocessing.
+  - `prediction`: the codes of the whole classifier-implement and scripts of model evaluation.
+  - `visualization`: the util-codes for result-visualization.
 
 
+## Old-version Log
 
-### II. Now-version
+\- version 0.1: Use narrowPeak from ATAC-seq as chromatin accessibility features
 
-​	[ Start at 2021/11/15, unfinished ]
+\- version 0.2: Try K-mer features; Add SMOTE-oversampling experiment
 
-**Two parts of the workflow:**
-
-- **In one Cell-line:** Split the dataset into 3 parts: train/validation/test set
-- **Cross-test:** Use full-size dataset from one cell-line and test on dataset from another
+\- version 0.3:  Use JSON as the experiment config input and log; Use signal/fold-change files as chromatin accessibility features. [Last updated: 2021/11/15]
 

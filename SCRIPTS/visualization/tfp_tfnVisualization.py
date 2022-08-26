@@ -42,6 +42,8 @@ for idx, data in enumerate(data_list):
 
     for key in data['files'].keys():
         feature = np.genfromtxt(join_path(file_dir, data['files'][key]), delimiter=',')
+        # DIRTY: for seq+atac only!
+        feature = feature[:, 2000:]
         if normalization:
             feature = normalize(feature, norm='l2')
         feature = np.mean(feature, axis=0)

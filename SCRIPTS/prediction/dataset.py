@@ -1,10 +1,18 @@
 #! /usr/bin python
 # -*- coding: utf-8 -*-
-# Update date: 2021/12/13
+# Update date: 2022/01/21
 # Author: Zhuofan Zhang
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import normalize
+
+
+def onehot_encoder(samples):
+    res = np.zeros([samples.shape[0], samples.shape[1], 4], dtype=np.float32)
+    for idx, sample in enumerate(samples):
+        for jdx, base in enumerate(sample):
+            res[idx][jdx][int(base)] = 1
+    return res
 
 
 class g4SeqEnv:
@@ -13,6 +21,8 @@ class g4SeqEnv:
                  ug4Seq: str = None,
                  vg4ATAC: str = None,
                  ug4ATAC: str = None,
+                 vg4ATACFd: str = None,
+                 ug4ATACFd: str = None,
                  vg4BS: str = None,
                  ug4BS: str = None,
                  normalization: bool = False,
@@ -33,8 +43,10 @@ class g4SeqEnv:
             ug4ATAC = kwformat_input['ug4atac']
             vg4BS = kwformat_input['vg4bs']
             ug4BS = kwformat_input['ug4bs']
+            vg4ATACFd = kwformat_input['vg4atacFd']  # First-diff of vg4atac
+            ug4ATACFd = kwformat_input['ug4atacFd']  # First-diff of ug4atac
 
-        if vg4Seq:
+        if vg4Seq and ug4Seq:
             vg4seqFeatures = pd.read_csv(vg4Seq, dtype='a', header=None)
             ug4seqFeatures = pd.read_csv(ug4Seq, dtype='a', header=None)
             pSampleNums = vg4seqFeatures.shape[0]
@@ -48,7 +60,7 @@ class g4SeqEnv:
         else:
             seqFeatures = None
 
-        if vg4ATAC:
+        if vg4ATAC and ug4ATAC:
             vg4atacFeatures = pd.read_csv(vg4ATAC, dtype='a', header=None)
             ug4atacFeatures = pd.read_csv(ug4ATAC, dtype='a', header=None)
             pSampleNums = vg4atacFeatures.shape[0]
@@ -59,7 +71,7 @@ class g4SeqEnv:
         else:
             atacFeatures = None
 
-        if vg4BS:
+        if vg4BS and ug4BS:
             vg4bsFeatures = pd.read_csv(vg4BS, dtype='a', header=None)
             ug4bsFeatures = pd.read_csv(ug4BS, dtype='a', header=None)
             pSampleNums = vg4bsFeatures.shape[0]
@@ -70,7 +82,21 @@ class g4SeqEnv:
         else:
             bsFeatures = None
 
-        featureList = [seqFeatures, atacFeatures, bsFeatures]
+        if vg4ATACFd and ug4ATACFd:
+            vg4atacFdFeatures = pd.read_csv(vg4ATACFd, dtype='a', header=None)
+            ug4atacFdFeatures = pd.read_csv(ug4ATACFd, dtype='a', header=None)
+            pSampleNums = vg4atacFdFeatures.shape[0]
+            nSampleNums = ug4atacFdFeatures.shape[0]
+            atacFdFeatures = pd.concat([
+                vg4atacFdFeatures, ug4atacFdFeatures],
+                ignore_index=True
+            )
+            if normalization:
+                atacFdFeatures = pd.DataFrame(normalize(atacFdFeatures, 'l2'))
+        else:
+            atacFdFeatures = None
+
+        featureList = [seqFeatures, atacFeatures, bsFeatures, atacFdFeatures]
         self.Features = None
         for feature in featureList:
             if feature is not None:
