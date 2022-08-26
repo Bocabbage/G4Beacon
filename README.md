@@ -9,9 +9,9 @@ G-quadruplex (G4) is a kind of the non-canonical secondary structure which usual
 ## II. Code Structure
 
 -  `/SCRIPT`
-  - `dataPreprocess`: the python-scripts for data preprocessing.
-  - `prediction`: the codes of the whole classifier-implement and scripts of model evaluation.
-  - `visualization`: the util-codes for result-visualization.
+    - `dataPreprocess`: the python-scripts for data preprocessing.
+    - `prediction`: the codes of the whole classifier-implement and scripts of model evaluation.
+    - `visualization`: the util-codes for result-visualization.
 
 
 ## Old-version Log
