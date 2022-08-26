@@ -6,9 +6,16 @@ G-quadruplex (G4) is a kind of the non-canonical secondary structure which usual
 
 <img src="./suppl-pics/fig1.png" alt="fig1" style="zoom:80%;" />
 
-## II. Code Structure
+## II. Dependencies
+- Ubuntu 20.04.4 LTS
+- Python 3.9.7
+- LightGBM 3.2.1
+- imblearn 0.8.1
+- scikit-learn 1.0.1
 
--  `/SCRIPT`
+## III. Code Structure
+
+-  `/G4Catcher`
     - `dataPreprocess`: the python-scripts for data preprocessing.
     - `prediction`: the codes of the whole classifier-implement and scripts of model evaluation.
     - `visualization`: the util-codes for result-visualization.
