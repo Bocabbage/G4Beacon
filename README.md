@@ -8,18 +8,77 @@ G-quadruplex (G4) is a kind of the non-canonical secondary structure which usual
 
 ## II. Dependencies
 - Ubuntu 20.04.4 LTS
+- Bedtools 2.29.2
+- Deeptools 3.5.1
 - Python 3.9.7
-- LightGBM 3.2.1
-- imblearn 0.8.1
-- scikit-learn 1.0.1
+  - LightGBM 3.2.1
+  - imblearn 0.8.1
+  - scikit-learn 1.0.1
 
 ## III. Code Structure
 
 -  `/G4Catcher`
-    - `dataPreprocess`: the python-scripts for data preprocessing.
-    - `prediction`: the codes of the whole classifier-implement and scripts of model evaluation.
-    - `visualization`: the util-codes for result-visualization.
+    - `workflow-scripts` : the wieldy scripts provided for users.
+    - `dataPreprocess` : the python-scripts for data preprocessing.
+    - `prediction` : the codes of the whole classifier-implement and scripts of model evaluation.
+    - `visualization` : the util-codes for result-visualization.
 
+## IV. Workflow & Usage
+
+<img src="./suppl-pics/fig2.png" alt="fig2" style="zoom:80%;" />
+
+### Training
+#### 1. Feature Selection (Construction)
+```bash
+mkdir {output-dir}
+cd {output-dir}
+
+# 1) Build G4-candidate dataset
+# 2) Pos/neg data division
+bash workflow-scripts/training/DataOverLap_SeqExtract.sh \
+     {G4-seq data directory} \        # GSE110582-K+
+     {G4 ChIP-seq data path} \
+     {Reference-genome data path}
+
+# Construct the chromatin-accessibility feature
+bash workflow-scripts/training/ComputeMatrix.sh \
+     {json file [compute matrix config]}
+
+# Dataset division
+bash workflow-scripts/training/DatasetDivision.sh \
+     {json file [dataset division config]}
+```
+
+#### 2. Model Training
+```bash
+# working-dir: {output-dir} in the feature-selection step
+bash workflow-scripts/training/Training.sh \
+     {json file [training config]}
+```
+
+### Prediction
+
+#### 1. Feature Selection (Construction)
+```bash
+mkdir {output-dir}
+cd {output-dir}
+
+# Build G4-candidate dataset
+bash workflow-scripts/prediction/SeqExtract.sh \
+     {G4-seq data path} \           # GSE110582-K+
+     {Reference-genome data path}
+
+# Construct the chromatin-accessibility feature
+bash workflow-scripts/prediction/ComputeMatrix.sh \
+     {json file [compute matrix config]}
+```
+
+#### 2. Prediction
+```bash
+# working-dir: {output-dir} in the feature-selection step
+bash workflow-scripts/prediction/Predict.sh \
+     {json file [prediction config]} # output of the 'training' step
+```
 
 ## Old-version Log
 
