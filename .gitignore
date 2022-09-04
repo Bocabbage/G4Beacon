@@ -31,6 +31,9 @@ fftGet(aborted).py
 
 #### Ignore util-shell-script ####
 *.sh
+!**/workflow-scripts/training/*.sh
+!**/workflow-scripts/prediction/*.sh
+
 
 #### Ignore all the log file ####
 *.log
