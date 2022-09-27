@@ -27,7 +27,7 @@ fftGet(aborted).py
 
 #### Ignore all the pics ####
 *.png
-!*fig1.png
+!**/suppl-pics/fig*
 
 #### Ignore util-shell-script ####
 *.sh
