@@ -46,6 +46,9 @@ class g4SeqEnv:
             vg4ATACFd = kwformat_input['vg4atacFd']  # First-diff of vg4atac
             ug4ATACFd = kwformat_input['ug4atacFd']  # First-diff of ug4atac
 
+        pSampleNums = 0
+        nSampleNums = 0
+
         if vg4Seq and ug4Seq:
             vg4seqFeatures = pd.read_csv(vg4Seq, dtype='a', header=None)
             ug4seqFeatures = pd.read_csv(ug4Seq, dtype='a', header=None)
@@ -57,6 +60,9 @@ class g4SeqEnv:
             #     vg4seqFeatures = vg4seqFeatures.iloc[:, mid - extend:mid + extend]
             #     ug4seqFeatures = ug4seqFeatures.iloc[:, mid - extend:mid + extend]
             seqFeatures = pd.concat([vg4seqFeatures, ug4seqFeatures], ignore_index=True)
+        elif vg4Seq and ug4Seq is None:
+            seqFeatures = pd.read_csv(vg4Seq, dtype='a', header=None)
+            pSampleNums = seqFeatures.shape[0]
         else:
             seqFeatures = None
 
@@ -68,6 +74,9 @@ class g4SeqEnv:
             atacFeatures = pd.concat([vg4atacFeatures, ug4atacFeatures], ignore_index=True)
             if normalization:
                 atacFeatures = pd.DataFrame(normalize(atacFeatures, 'l2'))
+        elif vg4ATAC and ug4ATAC is None:
+            atacFeatures = pd.read_csv(vg4ATAC, dtype='a', header=None)
+            pSampleNums = atacFeatures.shape[0]
         else:
             atacFeatures = None
 

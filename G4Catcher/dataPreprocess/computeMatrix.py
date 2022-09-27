@@ -49,7 +49,7 @@ if __name__ == '__main__':
     if os.path.isdir(outcsv_dir) is not True:
         os.makedirs(outcsv_dir)
 
-    if os.path.isdir(outplot_dir) is not True:
+    if outplot_dir and os.path.isdir(outplot_dir) is not True:
         os.makedirs(outplot_dir)
 
     for config in json_data['config_list']:

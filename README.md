@@ -1,4 +1,4 @@
-# G4Catcher: An in vivo G4 prediction method using chromatin and sequence information
+# G4Catcher: An *in vivo* G4 prediction method using chromatin and sequence information
 
 ## I. Introduction
 
@@ -6,7 +6,10 @@ G-quadruplex (G4) is a kind of the non-canonical secondary structure which usual
 
 <img src="./suppl-pics/fig1.png" alt="fig1" style="zoom:80%;" />
 
-## II. Dependencies
+## II. Prerequisites
+
+### Dependencies
+
 - Ubuntu 20.04.4 LTS
 - Bedtools 2.29.2
 - Deeptools 3.5.1
@@ -15,76 +18,155 @@ G-quadruplex (G4) is a kind of the non-canonical secondary structure which usual
   - imblearn 0.8.1
   - scikit-learn 1.0.1
 
+### Installation
+
+The Linux command tools: *bedtools* and *deeptools* should be installed and added to `PATH` before you used *G4Catcher*.
+We provide a `requirements.txt` for you to install the dependencies. It's more recommanded to use *G4Catcher* by creating a new env with *anaconda*.
+
+```bash
+pip install -r requirements.txt
+```
+
 ## III. Code Structure
 
--  `/G4Catcher`
-    - `workflow-scripts` : the wieldy scripts provided for users.
-    - `dataPreprocess` : the python-scripts for data preprocessing.
-    - `prediction` : the codes of the whole classifier-implement and scripts of model evaluation.
-    - `visualization` : the util-codes for result-visualization.
+- `/G4Catcher`
+  - `userInterface` : the wieldy python-scripts provided for users;
+  - `pretrainedModels` : the pre-trained models provided for users, which can be used directly in the *prediction* step;
+  - `dataPreprocess` : the python-scripts for data preprocessing;
+  - `prediction` : the codes of the whole classifier-implement and scripts of model evaluation;
+  - `visualization` : the util-codes for result-visualization.
 
 ## IV. Workflow & Usage
 
 <img src="./suppl-pics/fig2.png" alt="fig2" style="zoom:80%;" />
 
 ### Training
-#### 1. Feature Selection (Construction)
-```bash
-mkdir {output-dir}
-cd {output-dir}
 
-# 1) Build G4-candidate dataset
-# 2) Pos/neg data division
-bash workflow-scripts/training/DataOverLap_SeqExtract.sh \
-     {G4-seq data directory} \        # GSE110582-K+
-     {G4 ChIP-seq data path} \
-     {Reference-genome data path}
+#### 1. Training-set Preparing
+
+```bash
+cd userInterface
+
+# Pos/neg data division
+# For combination of {posChain-G4ChIPpos, negChain-G4ChIPpos, posChain-G4ChIPneg, negChain-G4ChIPneg}
+bedtools intersect -a ${G4SEQ_PATH}/GSM3003539_Homo_all_w15_th-1_plus.hits.max.K.w50.25.bed \
+                    -b ${G4CHIP_PATH} \
+                    -wa -F 0.1 | sort -k1,1 -k2,2n -u > plus.g4seqFirst.F0.1.bed &&
+
+bedtools intersect -a ${G4SEQ_PATH}/GSM3003539_Homo_all_w15_th-1_plus.hits.max.K.w50.25.bed \
+                    -b ${G4CHIP_PATH} \
+                    -v -F 0.1 | sort -k1,1 -k2,2n -u > plus_v.g4seqFirst.F0.1.bed &&
+
+bedtools intersect -a ${G4SEQ_PATH}/GSM3003539_Homo_all_w15_th-1_minus.hits.max.K.w50.25.bed \
+                    -b ${G4CHIP_PATH} \
+                    -wa -F 0.1 | sort -k1,1 -k2,2n -u > minus.g4seqFirst.F0.1.bed &&
+
+bedtools intersect -a ${G4SEQ_PATH}/GSM3003539_Homo_all_w15_th-1_minus.hits.max.K.w50.25.bed \
+                    -b ${G4CHIP_PATH} \
+                    -v -F 0.1 | sort -k1,1 -k2,2n -u > minus_v.g4seqFirst.F0.1.bed &&
+
+python g4seqPreprocess.py \
+    -i plus.g4seqFirst.F0.1.bed \
+    -oseq plus.g4seqFirst.F0.1.ex1000.seq.csv \
+    -obi plus.g4seqFirst.F0.1.ex1000.origin.bed \
+    -fi ${REF_PATH} \
+    --extend 1000 --reverse &&
+
+python g4seqPreprocess.py \
+    -i plus_v.g4seqFirst.F0.1.bed \
+    -oseq plus_v.g4seqFirst.F0.1.ex1000.seq.csv \
+    -obi plus_v.g4seqFirst.F0.1.ex1000.origin.bed \
+    -fi ${REF_PATH} \
+    --extend 1000 --reverse &&
+
+python g4seqPreprocess.py \
+    -i minus.g4seqFirst.F0.1.bed \
+    -oseq minus.g4seqFirst.F0.1.ex1000.seq.csv \
+    -obi minus.g4seqFirst.F0.1.ex1000.origin.bed \
+    -fi ${REF_PATH} \
+    --extend 1000 &&
+
+python g4seqPreprocess.py \
+    -i minus_v.g4seqFirst.F0.1.bed \
+    -oseq minus_v.g4seqFirst.F0.1.ex1000.seq.csv \
+    -obi minus_v.g4seqFirst.F0.1.ex1000.origin.bed \
+    -fi ${REF_PATH} \
+    --extend 1000
 
 # Construct the chromatin-accessibility feature
-bash workflow-scripts/training/ComputeMatrix.sh \
-     {json file [compute matrix config]}
+# For feature in {vg4-pos, vg4-neg, ug4-pos, ug4-neg}:
+python computeMatrix.py \
+       -p          [threadNums] \
+       --g4Input   [g4seq-origin-bed file imported from the former step] \
+       --envInput  [ATAC-seq signal-track file (BIGWIG)] \
+       --csvOutput [Output path of the result atac feature file (CSV)]
 
-# Dataset division
-bash workflow-scripts/training/DatasetDivision.sh \
-     {json file [dataset division config]}
+# Cat pos/neg chain data
+cat [vg4-pos seq CSV] [vg4-neg seq CSV] > [vg4 seq CSV]
+cat [ug4-pos seq CSV] [ug4-neg seq CSV] > [ug4 seq CSV]
+cat [vg4-pos atac CSV] [vg4-neg atac CSV] > [vg4 atac CSV]
+cat [ug4-pos atac CSV] [ug4-neg atac CSV] > [ug4 atac CSV]
+
+
+# Construct training set (over-sampling)
+python constructTrainingSet.py \
+       --vg4seqCSV  [Positive seq-feature file path (CSV)] \
+       --ug4seqCSV  [Negative seq feature file path (CSV)] \
+       --vg4atacCSV [Positive atac feature file path (CSV)] \
+       --ug4atacCSV [Negative atac feature file path (CSV)] \
+       --outdir     [result output dir]
 ```
 
 #### 2. Model Training
+
 ```bash
-# working-dir: {output-dir} in the feature-selection step
-bash workflow-scripts/training/Training.sh \
-     {json file [training config]}
+cd userInterface
+
+python Training.py \
+       --vg4seqCSV  [Positive seq-feature file path (CSV)] \
+       --ug4seqCSV  [Negative seq feature file path (CSV)] \
+       --vg4atacCSV [Positive atac feature file path (CSV)] \
+       --ug4atacCSV [Negative atac feature file path (CSV)] \
+       --oname      [prefix-name of the output trained-model-param file (JOBLIB)] \
+       --outdir     [output file dir]
 ```
 
 ### Prediction
 
-#### 1. Feature Selection (Construction)
-```bash
-mkdir {output-dir}
-cd {output-dir}
+#### 1. Feature Construction
 
-# Build G4-candidate dataset
-bash workflow-scripts/prediction/SeqExtract.sh \
-     {G4-seq data path} \           # GSE110582-K+
-     {Reference-genome data path}
+```bash
+cd userInterface
+
+# Build G4-candidate dataset and construct the sequence feature
+# For g4seq file of {pos, neg} chains:
+python g4seqPreProcess.py \
+     -i    [G4-seq data path (BED)] \  # sorted GSE110582-K+ (like: GSM3003539_Homo_all_w15_th-1_plus.hits.max.K.w50.25.bed)
+     -fi   [Reference-genome data path (FASTA)] \ # the pre-trained model we provided is under hg19
+     -oseq [Output path of the result seq feature file (CSV)] \
+     -obi  [Output path of the result cleaned g4-seq entries (the "origin-bed file") (BED)] \
+     --extend 1000 \
+     {--reverse} # It's essential for neg-train data
 
 # Construct the chromatin-accessibility feature
-bash workflow-scripts/prediction/ComputeMatrix.sh \
-     {json file [compute matrix config]}
+# For feature in {pos, neg}:
+python computeMatrix.py \
+       -p          [threadNums] \
+       --g4Input   [g4seq-origin-bed file imported from the former step] \
+       --envInput  [ATAC-seq signal-track file (BIGWIG)] \
+       --csvOutput [Output path of the result atac feature file (CSV)]
 ```
 
 #### 2. Prediction
+
 ```bash
-# working-dir: {output-dir} in the feature-selection step
-bash workflow-scripts/prediction/Predict.sh \
-     {json file [prediction config]} # output of the 'training' step
+cd userInterface
+
+# For feature in {pos, neg}:
+python getActiveG4s.py \
+       --seqCSV     [seq-feature file (CSV) generated in 'g4seqPreProcess' step] \
+       --atacCSV    [atac-feature file (CSV) generated in 'ComputeMatrix' step] \
+       --originBED  [origin-g4-seq-entry file (BED) generated in 'g4seqPreProcess' step] \
+       --model      [trained param file (JOBLIB) of G4Catcher] \
+       -o           [in vivo G4 entries (BED)]
 ```
-
-## Old-version Log
-
-- version 0.1: Use narrowPeak from ATAC-seq as chromatin accessibility features
-
-- version 0.2: Try K-mer features; Add SMOTE-oversampling experiment
-
-- version 0.3:  Use JSON as the experiment config input and log; Use signal/fold-change files as chromatin accessibility features. [Last updated: 2021/11/15]
-
