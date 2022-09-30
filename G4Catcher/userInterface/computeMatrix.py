@@ -29,22 +29,23 @@ if __name__ == '__main__':
         "outplot": None,
         "thread": args.p,
         "extend": args.extend,
-        "binsize": args.binSzie
+        "binsize": args.binsize
     }
     configList = [currConfig]
 
     jsonConfig = {
         "annotation": None,
+        "outplot_dir": None,
         "data_dir": "",
         "outcsv_dir": "",
         "outplot_dir": None,
-        "config_list": currConfig
+        "config_list": [currConfig]
     }
 
     randId = random.randint(0, 4000)
     tmpJsonFile = f"./{randId}tmp.compute-Matrix-config.json"
 
-    jsonObj = json.dump(jsonConfig, indent=4)
+    jsonObj = json.dumps(jsonConfig, indent=4)
     with open(tmpJsonFile, 'w+') as jsonFile:
         jsonFile.write(jsonObj)
 

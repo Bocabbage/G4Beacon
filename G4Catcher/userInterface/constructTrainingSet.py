@@ -37,13 +37,13 @@ if __name__ == '__main__':
             "pos_atac": args.vg4atacCSV,
             "neg_atac": args.ug4atacCSV
         },
-        "config_lists": configList
+        "config_lists": [configList]
     }
 
     randId = random.randint(0, 4000)
     tmpJsonFile = f"./{randId}tmp.datasetDivision-config.json"
 
-    jsonObj = json.dump(jsonConfig, indent=4)
+    jsonObj = json.dumps(jsonConfig, indent=4)
     with open(tmpJsonFile, 'w+') as jsonFile:
         jsonFile.write(jsonObj)
 

@@ -44,13 +44,13 @@ if __name__ == '__main__':
     jsonConfig = {
         "dataset_dir": "",
         "out_dir": args.outdir,
-        "data_list": configList
+        "data_list": [configList]
     }
 
     randId = random.randint(0, 4000)
     tmpJsonFile = f"./{randId}tmp.training-config.json"
 
-    jsonObj = json.dump(jsonConfig, indent=4)
+    jsonObj = json.dumps(jsonConfig, indent=4)
     with open(tmpJsonFile, 'w+') as jsonFile:
         jsonFile.write(jsonObj)
 
