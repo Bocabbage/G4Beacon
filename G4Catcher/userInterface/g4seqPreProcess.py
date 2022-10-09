@@ -114,7 +114,8 @@ def g4_sequence_extract(bedFile: str,
         with encoding by ONE-HOT.
     '''
     randId = random.randint(0, 4000)
-    tmpBedFile = "{}tmp.extendG4Rigion1.bed".format(randId)
+    basename = os.path.basename(bedFile)
+    tmpBedFile = f"{randId}tmp.{basename}.extendG4Rigion1.bed"
 
     # Extend and rm 'chrM'
     run_shell_cmd(("grep -v 'chrM' {bedFile} | "
@@ -123,7 +124,7 @@ def g4_sequence_extract(bedFile: str,
                    "> {tmpBedFile}").format(extend=extend, bedFile=bedFile, tmpBedFile=tmpBedFile))
 
     # Extract sequence
-    tmpFaFile = "{}tmp.extendG4Rigion2.fa".format(randId)
+    tmpFaFile = f"{randId}tmp.{basename}.extendG4Rigion2.fa"
     run_shell_cmd("bedtools getfasta -fi {} -bed {} > {}".format(refGenomeFile, tmpBedFile, tmpFaFile))
     _seq_save_nums(tmpFaFile, oseqFile, obedFile, extend, reverse)
 

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: Zhuofan Zhang
 # Update date: 2022/09/27
+import os
 import random
 import json
 import argparse
@@ -41,7 +42,8 @@ if __name__ == '__main__':
     }
 
     randId = random.randint(0, 4000)
-    tmpJsonFile = f"./{randId}tmp.datasetDivision-config.json"
+    basename = os.path.basename(args.vg4seqCSV)
+    tmpJsonFile = f"./{randId}tmp.{basename}.datasetDivision-config.json"
 
     jsonObj = json.dumps(jsonConfig, indent=4)
     with open(tmpJsonFile, 'w+') as jsonFile:
