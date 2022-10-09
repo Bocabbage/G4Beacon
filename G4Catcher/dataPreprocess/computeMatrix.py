@@ -46,7 +46,7 @@ if __name__ == '__main__':
     outcsv_dir = json_data['outcsv_dir']
     outplot_dir = json_data['outplot_dir']
 
-    if os.path.isdir(outcsv_dir) is not True:
+    if outcsv_dir != '' and os.path.isdir(outcsv_dir) is not True:
         os.makedirs(outcsv_dir)
 
     if outplot_dir and os.path.isdir(outplot_dir) is not True:
