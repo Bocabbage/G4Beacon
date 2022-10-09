@@ -23,8 +23,8 @@ jsonData = json.load(jsonFile)
 
 datasetDir = jsonData['dataset_dir']
 outdir = jsonData['out_dir']
-tfp_tfn = jsonData['tfp_tfn']
-if os.path.isdir(outdir) is not True:
+# tfp_tfn = jsonData['tfp_tfn']
+if outdir != '' and os.path.isdir(outdir) is not True:
     os.makedirs(outdir)
 
 for data in jsonData['data_list']:
