@@ -1,8 +1,8 @@
-# G4Catcher: An *in vivo* G4 prediction method using chromatin and sequence information
+# G4Beacon: An *in vivo* G4 prediction method using chromatin and sequence information
 
 ## I. Introduction
 
-G-quadruplex (G4) is a kind of the non-canonical secondary structure which usually formed in guanine-rich regions. G4 detection method based on next-generation sequencing technology allows profiling G4s in vitro on a genome-wide scale, which imputed numerous G4 entries on the human genome. However, recent G4 ChIP-seq technology established for in vivo G4 detection revealed that the amount of G4s in living cells is substantially lower. In vivo G4 sites can provide more convincing support for exploring the biological function of G4s, as these sites are direct evidence for the presence of folded G4s. However, there are some limitations to the G4-probing methods, for example, they are high-cost and difficult to operate. We proposed G4Catcher, a new machine-learning approach to predict whether in vitro G4 entries can actually fold into quadruplex structures in a given cell type, by integrating the chromatin accessibility profile and the surrounding sequence of G4 entries.
+G-quadruplex (G4) is a kind of the non-canonical secondary structure which usually formed in guanine-rich regions. G4 detection method based on next-generation sequencing technology allows profiling G4s in vitro on a genome-wide scale, which imputed numerous G4 entries on the human genome. However, recent G4 ChIP-seq technology established for in vivo G4 detection revealed that the amount of G4s in living cells is substantially lower. In vivo G4 sites can provide more convincing support for exploring the biological function of G4s, as these sites are direct evidence for the presence of folded G4s. However, there are some limitations to the G4-probing methods, for example, they are high-cost and difficult to operate. We proposed G4Beacon, a new machine-learning approach to predict whether in vitro G4 entries can actually fold into quadruplex structures in a given cell type, by integrating the chromatin accessibility profile and the surrounding sequence of G4 entries.
 
 <img src="./suppl-pics/fig1.png" alt="fig1" style="zoom:80%;" />
 
@@ -20,8 +20,8 @@ G-quadruplex (G4) is a kind of the non-canonical secondary structure which usual
 
 ### Installation
 
-The Linux command tools: *bedtools* and *deeptools* should be installed and added to `PATH` before you used *G4Catcher*.
-We provide a `requirements.txt` for you to install the dependencies. It's more recommanded to use *G4Catcher* by creating a new env with *anaconda*.
+The Linux command tools: *bedtools* and *deeptools* should be installed and added to `PATH` before you used *G4Beacon*.
+We provide a `requirements.txt` for you to install the dependencies. It's more recommanded to use *G4Beacon* by creating a new env with *anaconda*.
 
 ```bash
 pip install -r requirements.txt
@@ -29,7 +29,7 @@ pip install -r requirements.txt
 
 ## III. Code Structure
 
-- `/G4Catcher`
+- `/G4Beacon`
   - `userInterface` : the wieldy python-scripts provided for users;
   - `pretrainedModels` : the pre-trained models provided for users, which can be used directly in the *prediction* step;
   - `dataPreprocess` : the python-scripts for data preprocessing;
@@ -146,7 +146,7 @@ python g4seqPreProcess.py \
      -oseq [Output path of the result seq feature file (CSV)] \
      -obi  [Output path of the result cleaned g4-seq entries (the "origin-bed file") (BED)] \
      --extend 1000 \
-     {--reverse} # It's essential for neg-train data
+     {--reverse} # It's essential for neg-chain data
 
 # Construct the chromatin-accessibility feature
 # For feature in {pos, neg}:
@@ -167,6 +167,6 @@ python getActiveG4s.py \
        --seqCSV     [seq-feature file (CSV) generated in 'g4seqPreProcess' step] \
        --atacCSV    [atac-feature file (CSV) generated in 'ComputeMatrix' step] \
        --originBED  [origin-g4-seq-entry file (BED) generated in 'g4seqPreProcess' step] \
-       --model      [trained param file (JOBLIB) of G4Catcher] \
+       --model      [trained param file (JOBLIB) of G4Beacon] \
        -o           [in vivo G4 entries (BED)]
 ```

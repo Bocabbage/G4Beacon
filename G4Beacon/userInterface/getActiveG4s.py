@@ -15,11 +15,16 @@ if __name__ == '__main__':
     parser.add_argument('--originBED', type=str, help="origin-bed file generated from the pre-process step.")
     parser.add_argument('--model', type=str, help="Trained G4Catcher model file (checkpoint, JOBLIB).")
     parser.add_argument('-o', type=str, help="result output path (BED).")
+    parser.add_argument('--norm', type=str, default="False")
 
     args = parser.parse_args()
 
 
 #### Tmp json-file generation
+    norm = bool(args.norm == "True")
+    if norm:
+        print("[Info] Normalization: True")
+
     currConfig = {
         "name": None,
         "vg4seq": args.seqCSV,
@@ -34,7 +39,7 @@ if __name__ == '__main__':
         "result-file": args.o,
         "checkpoint": args.model,
         "model": "lightGBM",
-        "normalization": False
+        "normalization": norm
     }
     configList = currConfig
 
