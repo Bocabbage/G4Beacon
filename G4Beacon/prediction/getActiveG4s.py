@@ -1,6 +1,6 @@
 #! /usr/bin python
 # -*- coding: utf-8 -*-
-# Update date: 2022/06/13
+# Update date: 2022/10/17
 # Author: Zhuofan Zhang
 import os
 import json
@@ -63,10 +63,13 @@ for data in jsonData['data_list']:
         clf = joblib.load(checkpoint)
         y_pred = clf.predict_proba(testData.to_numpy())
 
-    y_pred = np.argmax(y_pred, axis=1)
+    y_pred_proba = y_pred
+    # y_pred = np.argmax(y_pred, axis=1)
     assert(len(y_pred) == len(testData))
     with open(originBed, 'r') as rfile:
         with open(resultFile, 'w+') as wfile:
             for idx, line in enumerate(rfile.readlines()):
-                if y_pred[idx] == 1:
-                    wfile.write(line)
+                line = f"{line.strip()}\t{y_pred_proba[idx][1]:.5f}\n"
+                wfile.write(line)
+                # if y_pred[idx] == 1:
+                #     wfile.write(line)

@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
 #### Tmp json-file generation
     currConfig = {
-        "name": None,
+        "name": args.oname,
         "vg4seq": args.vg4seqCSV,
         "ug4seq": args.ug4seqCSV,
         "vg4atac": args.vg4atacCSV,
@@ -39,12 +39,11 @@ if __name__ == '__main__':
         },
         "normalization": False
     }
-    configList = [currConfig]
 
     jsonConfig = {
         "dataset_dir": "",
         "out_dir": args.outdir,
-        "data_list": [configList]
+        "config_list": [currConfig]
     }
 
     randId = random.randint(0, 4000)

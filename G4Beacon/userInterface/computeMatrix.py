@@ -32,7 +32,6 @@ if __name__ == '__main__':
         "extend": args.extend,
         "binsize": args.binsize
     }
-    configList = [currConfig]
 
     jsonConfig = {
         "annotation": None,

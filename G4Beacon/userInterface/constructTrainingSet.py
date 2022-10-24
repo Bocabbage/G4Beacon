@@ -27,7 +27,6 @@ if __name__ == '__main__':
         "seed": 42,
         "out_dir": args.outdir
     }
-    configList = [currConfig]
 
     jsonConfig = {
         "origin_data_dir": "",
@@ -38,7 +37,7 @@ if __name__ == '__main__':
             "pos_atac": args.vg4atacCSV,
             "neg_atac": args.ug4atacCSV
         },
-        "config_lists": [configList]
+        "config_lists": [currConfig]
     }
 
     randId = random.randint(0, 4000)
@@ -50,7 +49,7 @@ if __name__ == '__main__':
         jsonFile.write(jsonObj)
 
 #### Do the real procession
-    run_shell_cmd(f"python ../dataPreProcess/fullDataset_sampling.py --json {tmpJsonFile}")
+    run_shell_cmd(f"python ../dataPreprocess/fullDataset_sampling.py --json {tmpJsonFile}")
 
 #### Remove the tmp config file
     run_shell_cmd(f"rm {tmpJsonFile}")
