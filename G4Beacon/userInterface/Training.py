@@ -30,6 +30,7 @@ if __name__ == '__main__':
         "ug4atac-fd": None,
         "vg4bs": None,
         "ug4bs": None,
+        "model": "lightGBM",
         "model_config":
         {
             "seed": 42,
