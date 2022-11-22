@@ -15,6 +15,7 @@ if __name__ == '__main__':
     parser.add_argument('--ug4atacCSV', type=str, help="Negative atac feature file path (CSV).")
     parser.add_argument('--oname', type=str, help="result output trained-model (JOBLIB).")
     parser.add_argument('--outdir', type=str, default="./", help="output file dir.")
+    parser.add_argument('--norm', action="store_true", default=False, help="Apply normalization on ATAC-features.")
 
     args = parser.parse_args()
 
@@ -38,7 +39,7 @@ if __name__ == '__main__':
             "n_estimators": 1000,
             "objective": "binary"
         },
-        "normalization": False
+        "normalization": args.norm
     }
 
     jsonConfig = {
