@@ -22,7 +22,7 @@ with open(args.json, 'r') as jfile:
 params_grid = json_data['params_grid']
 work_dir = json_data['work_dir']
 gscv = np.load(join_path(work_dir, json_data['gscv_result']))
-criterion = ['acc', 'pre', 'rec', 'auroc', 'auprc']
+criterion = ['acc', 'pre', 'rec', 'f1score', 'auroc', 'AP']
 
 
 ## check hyer-params' length
@@ -70,6 +70,7 @@ for i, key in enumerate(params_grid.keys()):
         )
         ax.set_title(f"{criteria} results for {key} tuning", size=10)
 
-    axes[-1, -1].axis('off')  # Don't show the last empty subplot
+    # axes[-1, -1].axis('off')  # Don't show the last empty subplot
     fig.suptitle(f"CV results for {key} tuning", fontsize=14)
     fig.savefig(join_path(work_dir, f"{key}-tuning-boxplots.png"))
+    fig.savefig(join_path(work_dir, f"{key}-tuning-boxplots.pdf"))

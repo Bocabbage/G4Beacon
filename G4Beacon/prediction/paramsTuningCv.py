@@ -8,7 +8,7 @@ import argparse
 import random
 import numpy as np
 from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import accuracy_score, recall_score, precision_score, auc, roc_curve, precision_recall_curve
+from sklearn.metrics import accuracy_score, recall_score, precision_score, auc, roc_curve, precision_recall_curve, f1_score
 from lightgbm import LGBMClassifier
 from dataset import g4SeqEnv
 from commonUtils import join_path
@@ -73,7 +73,7 @@ params_grid = json_data['params_grid']
 # for key, value in params_grid.items():
 #     params_grid[key] = [x for x in range(value[0], value[1], value[2])]
 
-criterion = ['acc', 'pre', 'rec', 'auroc', 'auprc']
+criterion = ['acc', 'pre', 'rec', 'f1score', 'auroc', 'auprc']
 dt = np.dtype([(x, float) for x in criterion])
 result_grid = np.zeros(
     shape=[len(value) for value in params_grid.values()],
@@ -114,32 +114,33 @@ for point in search_it:
 
     # K-fold validation
     criterion_results = {
-        'acc': 0, 'pre': 0, 'rec': 0, 'auroc': 0, 'auprc': 0
+        'acc': 0, 'pre': 0, 'rec': 0, 'f1score': 0, 'auroc': 0, 'auprc': 0
     }
 
-    for dataset in balanced_datasets:
+    for edataset in balanced_datasets:
         # training
         clf.fit(
             # (train_data, train_label)
-            dataset[0].to_numpy(),
-            dataset[1],
+            edataset[0].to_numpy(),
+            edataset[1],
             categorical_feature=categorical_feature_idx
         )
 
         # eval
-        y_pred = clf.predict_proba(dataset[2].to_numpy())  # test_data
+        y_pred = clf.predict_proba(edataset[2].to_numpy())  # test_data
         y_pred = np.argmax(y_pred, axis=1)
 
-        criterion_results['rec'] += recall_score(dataset[3], y_pred)
-        criterion_results['pre'] += precision_score(dataset[3], y_pred)
-        criterion_results['acc'] += accuracy_score(dataset[3], y_pred)
+        criterion_results['rec'] += recall_score(edataset[3], y_pred)
+        criterion_results['pre'] += precision_score(edataset[3], y_pred)
+        criterion_results['acc'] += accuracy_score(edataset[3], y_pred)
+        criterion_results['f1score'] += f1_score(edataset[3], y_pred)
 
         # get AUROC
-        fpr, tpr, _ = roc_curve(dataset[3], y_pred)
+        fpr, tpr, _ = roc_curve(edataset[3], y_pred)
         criterion_results['auroc'] += auc(fpr, tpr)
 
         # get AUPRC
-        prec, rec, _ = precision_recall_curve(dataset[3], y_pred)
+        prec, rec, _ = precision_recall_curve(edataset[3], y_pred)
         criterion_results['auprc'] += auc(rec, prec)
 
     # Calculate the average of the criterion

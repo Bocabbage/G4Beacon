@@ -1,12 +1,18 @@
 #! /usr/bin python
 # -*- coding: utf-8 -*-
-# Update date: 2021/12/10
+# Update date: 2022/11/29
 # Author: Zhuofan Zhang
 import os
 import json
 import argparse
 from joblib import dump
 from xgboost import XGBClassifier
+# --- Benchmark ---
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+# -----------------
 from lightgbm import LGBMClassifier, Dataset
 from imbalanced_ensemble.ensemble import SelfPacedEnsembleClassifier
 from dataset import g4SeqEnv
@@ -48,28 +54,38 @@ if args.mode == 'train':
         )
 
         model = config['model']
-        model_param = config['model_config']
+        model_param = None
+        if 'model_config' in config.keys():
+            model_param = config['model_config']
+
+        # ---------- Model Select -----------
         if model == 'Xgboost':
             clf = XGBClassifier()
         elif model == 'lightGBM':
-            model_param = config['model_config']
+            # model_param = config['model_config']
             clf = LGBMClassifier()
-
             # Use Dataset API
-            lgbm_dataset = Dataset(
-                g4_dataset.Features.to_numpy(),
-                label=g4_dataset.Labels
-            )
-
-        elif model == 'SPE':
-            basic_model = config['basic_model']
-            if basic_model == 'lightGBM':
-                basic_clf = LGBMClassifier()
-                basic_model_config = config['basic_model_config']
-                basic_clf.set_params(**basic_model_config)
-                clf = SelfPacedEnsembleClassifier(base_estimator=basic_clf)
-            else:  # Default: DecisionTree
-                clf = SelfPacedEnsembleClassifier()
+            # lgbm_dataset = Dataset(
+            #     g4_dataset.Features.to_numpy(),
+            #     label=g4_dataset.Labels
+            # )
+        elif model == 'logit':
+            clf = LogisticRegression()
+        elif model == 'dt':
+            clf = DecisionTreeClassifier()
+        elif model == 'svm':
+            clf = SVC()
+        elif model == 'rf':
+            clf = RandomForestClassifier()
+        # elif model == 'SPE':
+        #     basic_model = config['basic_model']
+        #     if basic_model == 'lightGBM':
+        #         basic_clf = LGBMClassifier()
+        #         basic_model_config = config['basic_model_config']
+        #         basic_clf.set_params(**basic_model_config)
+        #         clf = SelfPacedEnsembleClassifier(base_estimator=basic_clf)
+        #     else:  # Default: DecisionTree
+        #         clf = SelfPacedEnsembleClassifier()
         else:
             clf = None  # Will raise an error
 
@@ -84,16 +100,23 @@ if args.mode == 'train':
 
         train_features = g4_dataset.Features
         train_labels = g4_dataset.Labels
-        clf.set_params(**model_param)
-        clf.fit(
-            train_features.to_numpy(),
-            train_labels,
-            categorical_feature=categorical_feature_idx
-        )
+        if model_param is not None:
+            clf.set_params(**model_param)
+        if model == 'lightGBM':
+            clf.fit(
+                train_features.to_numpy(),
+                train_labels,
+                categorical_feature=categorical_feature_idx
+            )
+        else:
+            clf.fit(
+                train_features.to_numpy(),
+                train_labels
+            )
 
         # Save models
         name = config['name']
-        model_save_name = join_path(outdir, f"{name}_{model}.checkpoint.joblib")
+        model_save_name = join_path(outdir, f"{name}.checkpoint.joblib")
         dump(clf, model_save_name)
 else:
     pass

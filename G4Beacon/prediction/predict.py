@@ -21,7 +21,7 @@ matplotlib.use('Agg')
 
 # ------------ Function Def ------------ #
 
-def plot_roc(ax, y, y_pred, name: str, **axparams) -> None:
+def plot_roc(ax, y, y_pred, name: str, **axparams):
     y_pred = y_pred[:, 1]
     fpr, tpr, _ = roc_curve(y, y_pred)
     roc_auc = auc(fpr, tpr)
@@ -40,8 +40,10 @@ def plot_roc(ax, y, y_pred, name: str, **axparams) -> None:
     ax.set_ylabel("True Positive Rate", fontsize='xx-large')
     ax.legend(loc="lower right", fontsize='xx-large')
 
+    return roc_auc
 
-def plot_pr(ax, y, y_pred, name: str, **axparams) -> None:
+
+def plot_pr(ax, y, y_pred, name: str, **axparams):
     y_pred = y_pred[:, 1]
     precision, recall, _ = precision_recall_curve(y, y_pred)
     average_precision = average_precision_score(y, y_pred)
@@ -59,6 +61,8 @@ def plot_pr(ax, y, y_pred, name: str, **axparams) -> None:
     ax.set_xlabel("Recall", fontsize='xx-large')
     ax.set_ylabel("Precision", fontsize='xx-large')
     ax.legend(loc="upper right", fontsize='xx-large')
+
+    return average_precision
 
 
 # def get_tfp_tfn(outdir: str, features, y, y_pred, name: str) -> None:
@@ -104,7 +108,7 @@ def plot_pr(ax, y, y_pred, name: str, **axparams) -> None:
 #         )
 
 
-def eval_result(outdir: str, y, y_pred, name: str) -> None:
+def eval_result(outdir: str, y, y_pred, name: str):
     y_pred = np.argmax(y_pred, axis=1)
     # print("{}, {}".format(len(y), len(y_pred)))
     recall = recall_score(y, y_pred)
@@ -122,6 +126,8 @@ def eval_result(outdir: str, y, y_pred, name: str) -> None:
         output_str = output_str + f"TP number: {(y == 1).sum()}\n"
         output_str = output_str + f"TN number: {(y == 0).sum()}\n"
         ofile.write(output_str)
+
+    return accuracy, precision, recall, f1Score
 
 
 # ---------------------- main ---------------------- #
@@ -178,7 +184,7 @@ for data in jsonData['data_list']:
     else:
         clf = joblib.load(checkpoint)
         y_pred = clf.predict_proba(testData.to_numpy())
-    eval_result(outdir, testLabels, y_pred, name)
+    accuracy, precision, recall, f1Score = eval_result(outdir, testLabels, y_pred, name)
 
     try:
         pr_axparams = data['pr-axparams']
@@ -190,8 +196,11 @@ for data in jsonData['data_list']:
     except KeyError:
         roc_axparams = {}
 
-    plot_pr(pr_ax, testLabels, y_pred, name, **pr_axparams)
-    plot_roc(roc_ax, testLabels, y_pred, name, **roc_axparams)
+    ap = plot_pr(pr_ax, testLabels, y_pred, name, **pr_axparams)
+    roc_auc = plot_roc(roc_ax, testLabels, y_pred, name, **roc_axparams)
+
+    with open(join_path(outdir, f"{name}.csv"), 'w') as ofile:
+        ofile.write(f"{accuracy:.3f},{precision:.3f},{recall:.3f},{f1Score:.3f},{roc_auc:.3f},{ap:.3f}\n")
 
     # if tfp_tfn:
     #     tfp_tfn_outdir = join_path(outdir, f"{name}_tfp_tfn")
@@ -207,8 +216,13 @@ for data in jsonData['data_list']:
 
 pr_ax.set_title(f"PRC: {jsonData['predict-name']}", fontsize="xx-large")
 roc_ax.set_title(f"ROC: {jsonData['predict-name']}", fontsize="xx-large")
+# Save pdf file
 roc_fig.savefig(os.path.join(outdir, f"{jsonData['predict-name']}-roc.pdf"))
 pr_fig.savefig(os.path.join(outdir, f"{jsonData['predict-name']}-pr.pdf"))
+# Save png file
+roc_fig.savefig(os.path.join(outdir, f"{jsonData['predict-name']}-roc.png"))
+pr_fig.savefig(os.path.join(outdir, f"{jsonData['predict-name']}-pr.png"))
+
 
 # Save axes-data
 with open(os.path.join(outdir, f"{jsonData['predict-name']}-roc.pickle"), 'wb') as rocaxesFile:
