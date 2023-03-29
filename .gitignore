@@ -40,3 +40,6 @@ fftGet(aborted).py
 
 #### Ignore all the log file ####
 *.log
+
+#### Ignore revision experiment config ####
+G4Beacon/configJSON/20230124-mdpi-revision

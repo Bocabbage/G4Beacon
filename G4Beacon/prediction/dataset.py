@@ -1,6 +1,6 @@
 #! /usr/bin python
 # -*- coding: utf-8 -*-
-# Update date: 2022/01/21
+# Update date: 2022/12/06
 # Author: Zhuofan Zhang
 import numpy as np
 import pandas as pd
@@ -50,15 +50,22 @@ class g4SeqEnv:
         nSampleNums = 0
 
         if vg4Seq and ug4Seq:
-            vg4seqFeatures = pd.read_csv(vg4Seq, dtype='a', header=None)
-            ug4seqFeatures = pd.read_csv(ug4Seq, dtype='a', header=None)
+            vg4suffix = str.lower(vg4Seq[-3:])
+            ug4suffix = str.lower(ug4Seq[-3:])
+
+            if vg4suffix == 'csv':
+                vg4seqFeatures = pd.read_csv(vg4Seq, dtype='a', header=None)  # .astype(np.float32)
+            elif vg4suffix == 'npy':  # Embedded-format
+                vg4seqFeatures = np.load(vg4Seq)
+                vg4seqFeatures = pd.DataFrame(np.reshape(vg4seqFeatures, (vg4seqFeatures.shape[0], -1)))  # mat -> vec
+
+            if ug4suffix == 'csv':
+                ug4seqFeatures = pd.read_csv(ug4Seq, dtype='a', header=None)  # .astype(np.float32)
+            elif ug4suffix == 'npy':  # Embedded-format
+                ug4seqFeatures = np.load(ug4Seq)
+                ug4seqFeatures = pd.DataFrame(np.reshape(ug4seqFeatures, (ug4seqFeatures.shape[0], -1)))  # mat -> vec
             pSampleNums = vg4seqFeatures.shape[0]
             nSampleNums = ug4seqFeatures.shape[0]
-
-            # if extend:
-            #     mid = vg4seqFeatures.shape[1] // 2
-            #     vg4seqFeatures = vg4seqFeatures.iloc[:, mid - extend:mid + extend]
-            #     ug4seqFeatures = ug4seqFeatures.iloc[:, mid - extend:mid + extend]
             seqFeatures = pd.concat([vg4seqFeatures, ug4seqFeatures], ignore_index=True)
         elif vg4Seq and ug4Seq is None:
             seqFeatures = pd.read_csv(vg4Seq, dtype='a', header=None)
@@ -67,8 +74,8 @@ class g4SeqEnv:
             seqFeatures = None
 
         if vg4ATAC and ug4ATAC:
-            vg4atacFeatures = pd.read_csv(vg4ATAC, dtype='a', header=None)
-            ug4atacFeatures = pd.read_csv(ug4ATAC, dtype='a', header=None)
+            vg4atacFeatures = pd.read_csv(vg4ATAC, dtype='a', header=None).astype(np.float32)
+            ug4atacFeatures = pd.read_csv(ug4ATAC, dtype='a', header=None).astype(np.float32)
             pSampleNums = vg4atacFeatures.shape[0]
             nSampleNums = ug4atacFeatures.shape[0]
             atacFeatures = pd.concat([vg4atacFeatures, ug4atacFeatures], ignore_index=True)
