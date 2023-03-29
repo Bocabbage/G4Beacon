@@ -1,5 +1,0 @@
-{
-    "work_dir": "Grid-search cv-result npy-file dir && output dir",
-    "gscv_result": "Grid-search cv-result npy-file name",
-    "hyper_params_name": ["Hyper-params-Name1", "Hyper-params-Name2", "..."]
-}
