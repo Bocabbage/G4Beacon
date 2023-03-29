@@ -1,5 +1,13 @@
 #### Update only the SCRIPTS/ DIR at present ####
 # Experiment-related data dirs
+/0.RAW-DATA
+/1.PREPROCESS-DATA
+/2.FEATURES
+/3.EXPERIMENTS
+/Compare
+/NewTests
+/STATUS
+/utils
 /G4Beacon-private
 # Software dirs
 /softwares
@@ -19,7 +27,7 @@ __pycache__
 
 #### Ignore all the config-files except the example.json for each configJSON dir ####
 *.json
-!*example.json
+# !*example.json
 
 #### Ignore aborted feature-engineering methods
 fftGet(aborted).py
@@ -30,12 +38,12 @@ fftGet(aborted).py
 
 #### Ignore util-shell-script ####
 *.sh
-!**/workflow-scripts/training/*.sh
-!**/workflow-scripts/prediction/*.sh
+# !**/workflow-scripts/training/*.sh
+# !**/workflow-scripts/prediction/*.sh
 
 
 #### Ignore all the log file ####
 *.log
 
 #### Ignore revision experiment config ####
-G4Beacon/configJSON/20230124-mdpi-revision
+# G4Beacon/configJSON/20230124-mdpi-revision
