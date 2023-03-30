@@ -51,6 +51,7 @@ setup(
         "scikit-learn >= 1.0.1",
         "lightgbm >= 3.2.1"
     ],
+    include_package_data=True,
     python_requires=">=3.9",
     cmdclass={"install_scripts": InstallScripts}
 )
