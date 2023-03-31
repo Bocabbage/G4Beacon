@@ -47,3 +47,10 @@ fftGet(aborted).py
 
 #### Ignore revision experiment config ####
 # G4Beacon/configJSON/20230124-mdpi-revision
+
+#### Ignore install-file
+G4beacon.egg-info/
+build/
+
+#### Ignore file(s) for debug
+installed-files.txt
