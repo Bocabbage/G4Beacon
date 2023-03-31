@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 # Author: Zhuofan Zhang
 # Update date: 2023/03/30
+import os
 import joblib
 import argparse
-from dataset import g4SeqEnv
+from .dataset import g4SeqEnv
 
 
 def predict(config):
@@ -48,11 +49,22 @@ def getActiveG4s_main(args):
     parser.add_argument('--seqCSV', type=str, help="Seq feature file path (CSV).")
     parser.add_argument('--atacCSV', type=str, help="Atac feature file path (CSV).")
     parser.add_argument('--originBED', type=str, help="origin-bed file generated from the pre-process step.")
-    parser.add_argument('--model', type=str, help="Trained G4Catcher model file (checkpoint, JOBLIB).")
+    parser.add_argument('--model', type=str, default=None, help="Trained G4Catcher model file (checkpoint, JOBLIB).")
     parser.add_argument('-o', type=str, help="result output path (BED).")
     parser.add_argument('--norm', action="store_true", default=False, help="Apply normalization on ATAC-features.")
 
     args = parser.parse_args(args)
+    model = args.model
+    if model is None:
+        model = os.path.join(
+            os.path.dirname(__file__),
+            "models/",
+            "seq+atac_over_lightGBM_nofilt_lightGBM.checkpoint.joblib"
+        )
+    if not os.path.exists(model):
+        print("Error: Deafult model-joblib doesn't exits.")
+        print(f"File not exist: {model}")
+        exit(-1)
 
     config = {
         "vg4seq": args.seqCSV,
@@ -65,7 +77,7 @@ def getActiveG4s_main(args):
         "ug4bs": None,
         "origin-bed": args.originBED,
         "result-file": args.o,
-        "checkpoint": args.model,
+        "checkpoint": model,
         "model": "lightGBM",
         "normalization": args.norm
     }

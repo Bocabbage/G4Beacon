@@ -1,25 +1,13 @@
 # -*- coding: utf-8 -*-
-# Update date: 2023/03/29
+# Update date: 2023/03/30
 # Author: Zhuofan Zhang
 import os
 import shutil
 import re
 from setuptools import setup, find_packages
-from setuptools.command.install_scripts import install_scripts
-
-
-class InstallScripts(install_scripts):
-
-    def run(self):
-        install_scripts.run(self)
-
-        for script in self.get_outputs():
-            if os.path.basename(script)[:-3] == '.py':
-                dst = script[:-3]
-            else:
-                continue
-            print("moving %s to %s" % (script, dst))
-            shutil.move(script, dst)
+# from setuptools.command.install_scripts import install_scripts
+from setuptools.command.install import install as _install
+from setuptools.command.sdist import sdist as _sdist
 
 
 def getVersion():
@@ -35,13 +23,28 @@ def getVersion():
     return None
 
 
+class install(_install):
+    def run(self):
+        self.distribution.metadata.version = getVersion()
+        _install.run(self)
+        return
+
+
+class sdist(_sdist):
+
+    def run(self):
+        self.distribution.metadata.version = getVersion()
+        return _sdist.run(self)
+
+
 setup(
-    name='G4Beacon',
+    name='G4beacon',
     version=getVersion(),
     author="Zhuofan Zhang, Rongxin Zhang, Ke Xiao, Xiao Sun",
     author_email="zhangzhuofan97@gmail.com",
     packages=find_packages(),
-    scripts=['bin/g4beacon.py'],
+    package_data={"": ["models/*.joblib"]},
+    scripts=['bin/g4beacon'],
     description="In-vivo G4 prediction tool taking seq+atac features as input.",
     url="https://github.com/Bocabbage/G4Beacon",
     install_requires=[
@@ -49,9 +52,10 @@ setup(
         "pandas >= 1.3.5",
         "imbalanced-learn >= 0.8.1",
         "scikit-learn >= 1.0.1",
-        "lightgbm >= 3.2.1"
+        "lightgbm >= 3.2.1",
+        "biopython >= 1.79"
     ],
     include_package_data=True,
     python_requires=">=3.9",
-    cmdclass={"install_scripts": InstallScripts}
+    cmdclass={"install": install, "sdist": sdist}
 )

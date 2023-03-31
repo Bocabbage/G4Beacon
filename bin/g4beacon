@@ -3,7 +3,11 @@
 # Author: Zhuofan Zhang
 # Update date: 2023/03/30
 import sys
-from G4Beacon import seqFeatureConstruct_main, atacFeatureConstruct_main, getActiveG4s_main, trainingsetConstruct_main, trainOwnData_main
+from G4Beacon.seqFeatureConstruct import seqFeatureConstruct_main
+from G4Beacon.atacFeatureConstruct import atacFeatureConstruct_main
+from G4Beacon.getActiveG4s import getActiveG4s_main
+from G4Beacon.trainingsetConstruct import trainingsetConstruct_main
+from G4Beacon.trainOwnData import trainOwnData_main
 
 
 def main(args):
@@ -19,18 +23,18 @@ def main(args):
         Usage: g4beacon atacFeatureConstruct -h
         More information: https://github.com/Bocabbage/G4Beacon
     """
-    if len(args) == 1 and args[0] == "--help" or args[0] == "-h":
+    if len(args) == 1 and (args[0] == "--help" or args[0] == "-h"):
         print(description)
     elif args[0] == 'seqFeatureConstruct':
-        seqFeatureConstruct_main(args)
+        seqFeatureConstruct_main(args[1:])
     elif args[0] == 'atacFeatureConstruct':
-        atacFeatureConstruct_main(args)
+        atacFeatureConstruct_main(args[1:])
     elif args[0] == 'getActiveG4s':
-        getActiveG4s_main(args)
+        getActiveG4s_main(args[1:])
     elif args[0] == 'trainingsetConstruct':
-        trainingsetConstruct_main(args)
+        trainingsetConstruct_main(args[1:])
     elif args[0] == 'trainOwnData':
-        trainOwnData_main(args)
+        trainOwnData_main(args[1:])
     else:
         print(f"Error: No such sub-tool called: {args[0]}")
 

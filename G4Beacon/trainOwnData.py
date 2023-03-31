@@ -7,8 +7,8 @@ import json
 import argparse
 from joblib import dump
 from lightgbm import LGBMClassifier
-from dataset import g4SeqEnv
-from commonUtils import joinPath
+from .dataset import g4SeqEnv
+from .commonUtils import joinPath
 
 
 def train(config):

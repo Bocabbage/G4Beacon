@@ -6,9 +6,8 @@ import os
 import re
 import random
 import argparse
-# import torch
 from Bio import SeqIO
-from commonUtils import runShellCmd
+from .commonUtils import runShellCmd
 
 _transformDict = {'A': 't', 'T': 'a', 'C': 'g', 'G': 'c'}
 _transTab = str.maketrans('ACGT', '0123')
@@ -116,10 +115,12 @@ def g4SeqExtract(bedFile: str,
     tmpBedFile = f"{randId}tmp.{basename}.extendG4Rigion1.bed"
 
     # Extend and rm 'chrM'
-    runShellCmd(("grep -v 'chrM' {bedFile} | "
-                 "awk 'BEGIN{{ extend={extend};OFS=\"\t\" }}"
-                 "{{ if($2 > extend){{print $1, $2-extend, $3+extend;}} }}' "
-                 "> {tmpBedFile}").format(extend=extend, bedFile=bedFile, tmpBedFile=tmpBedFile))
+    runShellCmd((
+        "grep -v 'chrM' {bedFile} | "
+        "awk 'BEGIN{{ extend={extend};OFS=\"\t\" }}"
+        "{{ if($2 > extend){{print $1, $2-extend, $3+extend;}} }}' "
+        "> {tmpBedFile}").format(extend=extend, bedFile=bedFile, tmpBedFile=tmpBedFile)
+    )
 
     # Extract sequence
     tmpFaFile = f"{randId}tmp.{basename}.extendG4Rigion2.fa"
@@ -136,7 +137,7 @@ def seqFeatureConstruct_main(args):
     parser.add_argument('-oseq', type=str, help="Output g4-extend sequence file (One-Hot encoded).")
     parser.add_argument('-obi', type=str, help="Bed file of sequence extract valid entries.")
     parser.add_argument('-fi', type=str, help="Reference sequence file.")
-    parser.add_argument('--extend', type=int, help="Get [start - extend, end + extend] entries.")
+    parser.add_argument('--extend', type=int, default=1000, help="Get [start - extend, end + extend] entries.")
     parser.add_argument('--reverse', action="store_true", default=False, dest="reverse")
     args = parser.parse_args(args)
 

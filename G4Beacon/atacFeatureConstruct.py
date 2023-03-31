@@ -4,7 +4,7 @@
 # Update date: 2023/03/30
 import random
 import argparse
-from commonUtils import runShellCmd
+from .commonUtils import runShellCmd
 
 
 def matrixToCsv(imatFile: str, ocsvFile: str) -> None:
