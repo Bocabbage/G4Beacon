@@ -1,5 +1,5 @@
 # G4Beacon: An *in vivo* G4 prediction method using chromatin and sequence information
-
+**[Attention] The software is still beta-version now. We will upload the formal version as soon as possible.**
 ## <img src="./suppl-pics/beacon.ico"/> Introduction
 
 G-quadruplex (G4) structures are critical epigenetic regulatory elements, which usually form in guanine-rich regions in DNA. However, predicting the formation of G4 structures within living cells remains a challenge. Here, we present an ultra-robust machine learning method, G4Beacon, which utilizes the Gradient-Boosting Decision Tree (GBDT) algorithm, coupled with the ATAC-seq data and the surrounding sequences of in vitro G4s, to accurately predict the for-mation ability of these in vitro G4s in different cell types. As a result, our model achieved excel-lent performance even when the test set was extremely skewed. Besides this, G4Beacon can also identify the in vivo G4s of other cell lines precisely with the model built on a special cell line, regardless of the experimental techniques or platforms. Altogether, G4Beacon is an accurate, re-liable, and easy-to-use method for the prediction of in vivo G4s of various cell lines.

@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 # Author: Zhuofan Zhang
 # Update date: 2023/03/30
-import os
-import json
 import argparse
 from joblib import dump
 from lightgbm import LGBMClassifier

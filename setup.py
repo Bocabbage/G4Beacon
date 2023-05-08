@@ -5,7 +5,6 @@ import os
 import shutil
 import re
 from setuptools import setup, find_packages
-# from setuptools.command.install_scripts import install_scripts
 from setuptools.command.install import install as _install
 from setuptools.command.sdist import sdist as _sdist
 
@@ -31,7 +30,6 @@ class install(_install):
 
 
 class sdist(_sdist):
-
     def run(self):
         self.distribution.metadata.version = getVersion()
         return _sdist.run(self)
