@@ -1,30 +1,44 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Author: Zhuofan Zhang
-# Update date: 2023/03/30
+# Update date: 2023/05/08
 import sys
 from G4Beacon.seqFeatureConstruct import seqFeatureConstruct_main
 from G4Beacon.atacFeatureConstruct import atacFeatureConstruct_main
 from G4Beacon.getActiveG4s import getActiveG4s_main
 from G4Beacon.trainingsetConstruct import trainingsetConstruct_main
 from G4Beacon.trainOwnData import trainOwnData_main
+from G4Beacon.train import train_main
+from G4Beacon.predict import predict_main
 
 
 def main(args):
-    description = """
+    description = r"""
         [g4beacon] is an in vivo G4 prediction tool taking seq+atac feature inputs.
         This software can be used to construct the feature, train on your own data or
-        predict in vivo G4s. We provide the following sub-tools:
+        predict in vivo G4s. We provide the following sub-commands:
+        - predict [Takes raw data as input and employs the default trained-G4Beacon to predict in vivo G4s]
+        - train [Train G4Beacon-model with your own data]
+        For more details, run:
+        g4beacon predict --help
+        g4beacon train --help
+
+        We also provide the following sub-tools:
         - seqFeatureConstruct   [Takes BED-format file as input to construct sequence-feature]
         - atacFeatureConstruct  [Takes BigWig file as input to construct atac-feature]
         - getActiveG4s          [Predicts in vivo G4s]
         - trainingsetConstruct  [Takes your constructed-feature data and create a balanced training-set]
         - trainOwnData          [Trains GBDT model with your own data]
-        Usage: g4beacon atacFeatureConstruct -h
+        For more details, run:
+        g4beacon {seqFeatureConstruct, atacFeatureConstruct, getActiveG4s, trainingsetConstruct, trainOwnData} --help
         More information: https://github.com/Bocabbage/G4Beacon
     """
     if len(args) == 1 and (args[0] == "--help" or args[0] == "-h"):
         print(description)
+    elif args[0] == 'predict':
+        predict_main(args[1:])
+    elif args[0] == 'train':
+        train_main(args[1:])
     elif args[0] == 'seqFeatureConstruct':
         seqFeatureConstruct_main(args[1:])
     elif args[0] == 'atacFeatureConstruct':
@@ -36,7 +50,7 @@ def main(args):
     elif args[0] == 'trainOwnData':
         trainOwnData_main(args[1:])
     else:
-        print(f"Error: No such sub-tool called: {args[0]}")
+        print(f"Error: sub-commend/tool not found [{args[0]}]")
 
 
 if __name__ == '__main__':
