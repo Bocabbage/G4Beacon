@@ -54,3 +54,6 @@ build/
 
 #### Ignore file(s) for debug
 installed-files.txt
+
+#### Ignore large data file(s)
+*.csv
