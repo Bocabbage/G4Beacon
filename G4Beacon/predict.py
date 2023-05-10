@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Author: Zhuofan Zhang
-# Update date: 2023/05/08
+# Update date: 2023/05/09
 import random
 import os
 import argparse
 from .seqFeatureConstruct import seqFeatureConstruct_main
 from .atacFeatureConstruct import atacFeatureConstruct_main
 from .getActiveG4s import getActiveG4s_main
-from .commonUtils import runShellCmd
+from .commonUtils import runShellCmd, isWritable
 
 
 def predict_main(args):
@@ -28,7 +28,28 @@ def predict_main(args):
     parser.add_argument('--workdir', type=str, default=os.path.join(os.path.expanduser('~'), f"{randId}-g4beacon"), help=r"tmp-file dir (default: $HOME).")
     parser.add_argument('-p', type=int, default=1, help=r"process-num for using multi-process to accelerate the progress (default: 1).")
     parser.add_argument('--store_cache', action="store_true", default=False, help=r"store the generated seq-feature csv files as cache or not. (default: false)")
+
+    # Optional origin data
+    parser.add_argument('--minusOrigin', type=str, default=None)
+    parser.add_argument('--plusOrigin', type=str, default=None)
+    parser.add_argument('--catmpOrigin', type=str, default=None)
+
     args = parser.parse_args(args)
+
+    if args.minusOrigin is None:
+        origin_minus_bed = os.path.join(os.path.dirname(__file__), "data/", "GSM3003539_minus.g4seqFirst.F0.1.ex1000.origin.bed")
+    else:
+        origin_minus_bed = args.minusOrigin
+
+    if args.plusOrigin is None:
+        origin_plus_bed = os.path.join(os.path.dirname(__file__), "data/", "GSM3003539_plus.g4seqFirst.F0.1.ex1000.origin.bed")
+    else:
+        origin_plus_bed = args.plusOrigin
+
+    if args.catmpOrigin is None:
+        origin_catmp_bed = os.path.join(os.path.dirname(__file__), "data/", "GSM3003539_CATmp.g4seqFirst.F0.1.ex1000.origin.bed")
+    else:
+        origin_catmp_bed = args.catmpOrigin
 
     if not os.path.isdir(args.workdir):
         os.makedirs(args.workdir)
@@ -36,34 +57,34 @@ def predict_main(args):
     # Construct the configuration-list for the prediction-progress
     configs = {
         "minus_seq_feature_construct": [
-            "-i", os.path.join(os.path.dirname(__file__), "data/", "GSM3003539_minus.g4seqFirst.F0.1.ex1000.origin.bed"),
-            "-oseq", os.path.join(args.workdir, "GSM3003539_minus.g4seqFirst.F0.1.ex1000.seq.csv"),
+            "-i", origin_minus_bed,
+            "-oseq", os.path.join(args.workdir, "minus.g4seqFirst.F0.1.ex1000.seq.csv"),
             "-obi", os.path.join(args.workdir, "tmp.minus.origin.bed"),  # Should not be different from the -i file
             "-fi", args.fi,
         ],
         "plus_seq_feature_construct": [
-            "-i", os.path.join(os.path.dirname(__file__), "data/", "GSM3003539_plus.g4seqFirst.F0.1.ex1000.origin.bed"),
-            "-oseq", os.path.join(args.workdir, "GSM3003539_plus.g4seqFirst.F0.1.ex1000.seq.csv"),
+            "-i", origin_plus_bed,
+            "-oseq", os.path.join(args.workdir, "plus.g4seqFirst.F0.1.ex1000.seq.csv"),
             "-obi", os.path.join(args.workdir, "tmp.plus.origin.bed"),  # Should not be different from the -i file
             "-fi", args.fi,
             "--reverse",
         ],
         "atac_feature_construct": [
             "-p", f"{args.p}",
-            "--g4Input", os.path.join(os.path.dirname(__file__), "data/", "GSM3003539_CATmp.g4seqFirst.F0.1.ex1000.origin.bed"),
+            "--g4Input", origin_catmp_bed,
             "--atacInput", args.atac,
-            "--csvOutput", os.path.join(args.workdir, "GSM3003539_CATmp.g4seqFirst.F0.1.ex1000.atac.csv"),
+            "--csvOutput", os.path.join(args.workdir, "CATmp.g4seqFirst.F0.1.ex1000.atac.csv"),
         ],
         "get_activeg4s": [
-            "--seqCSV", os.path.join(args.workdir, "GSM3003539_CATmp.g4seqFirst.F0.1.ex1000.seq.csv"),
-            "--atacCSV", os.path.join(args.workdir, "GSM3003539_CATmp.g4seqFirst.F0.1.ex1000.atac.csv"),
-            "--originBED", os.path.join(os.path.dirname(__file__), "data/", "GSM3003539_CATmp.g4seqFirst.F0.1.ex1000.origin.bed"),
+            "--seqCSV", os.path.join(args.workdir, "CATmp.g4seqFirst.F0.1.ex1000.seq.csv"),
+            "--atacCSV", os.path.join(args.workdir, "CATmp.g4seqFirst.F0.1.ex1000.atac.csv"),
+            "--originBED", origin_catmp_bed,
             "--model", args.model,
             "-o", args.o,
         ],
     }
 
-    seq_feature_cache = os.path.exists(
+    seq_feature_cache = args.catmpOrigin is None and os.path.exists(
         os.path.join(
             os.path.dirname(__file__),
             "data/",
@@ -77,13 +98,13 @@ def predict_main(args):
         runShellCmd(
             (f"cat {os.path.join(args.workdir, 'tmp.minus.origin.bed')} "
              f"{os.path.join(args.workdir, 'tmp.plus.origin.bed')} > "
-             f"{os.path.join(args.workdir, 'GSM3003539_CATmp.g4seqFirst.F0.1.ex1000.seq.csv')}")
+             f"{os.path.join(args.workdir, 'CATmp.g4seqFirst.F0.1.ex1000.seq.csv')}")
         )
     else:
         # Build tmp soft-link
         runShellCmd(
             (f"ln -s {os.path.join(os.path.dirname(__file__), 'data/', 'GSM3003539_CATmp.g4seqFirst.F0.1.ex1000.seq.csv')} "
-             f"{os.path.join(args.workdir, 'GSM3003539_CATmp.g4seqFirst.F0.1.ex1000.seq.csv')}")
+             f"{os.path.join(args.workdir, 'CATmp.g4seqFirst.F0.1.ex1000.seq.csv')}")
         )
         print("Use cache...")
     print("----- sequece feature construction FINISH -----")
@@ -95,10 +116,13 @@ def predict_main(args):
     getActiveG4s_main(configs["get_activeg4s"])
     print("----- predict FINISH -----")
 
-    if not seq_feature_cache and args.store_cache:
-        runShellCmd(
-            (f"mv {os.path.join(args.workdir, 'GSM3003539_CATmp.g4seqFirst.F0.1.ex1000.seq.csv')} "
-             f"{os.path.join(os.path.dirname(__file__), 'data/', 'GSM3003539_CATmp.g4seqFirst.F0.1.ex1000.seq.csv')}")
-        )
+    if not seq_feature_cache and args.store_cache and args.catmpOrigin is None:
+        if isWritable(os.path.join(os.path.dirname(__file__), 'data/')):
+            runShellCmd(
+                (f"mv {os.path.join(args.workdir, 'CATmp.g4seqFirst.F0.1.ex1000.seq.csv')} "
+                 f"{os.path.join(os.path.dirname(__file__), 'data/', 'GSM3003539_CATmp.g4seqFirst.F0.1.ex1000.seq.csv')}")
+            )
+        else:
+            print("store cache failed: the data/ dir is not writable.")
 
     runShellCmd(f"rm -rf {args.workdir}")

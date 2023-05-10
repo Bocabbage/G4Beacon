@@ -1,0 +1,1 @@
+python -m G4Beacon.test.test_commonUtils

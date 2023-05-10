@@ -26,15 +26,27 @@ def train_main(args):
     parser.add_argument('-p', type=int, default=1, help=r"process-num for using multi-process to accelerate the progress (default: 1).")
     parser.add_argument('--seed', type=int, default=42, help=r"random-seed setting. (default: 42)")
 
+    # Optional origin data
+    parser.add_argument('--minusOrigin', type=str, default=None)
+    parser.add_argument('--plusOrigin', type=str, default=None)
+
     args = parser.parse_args(args)
+
+    if args.minusOrigin is None:
+        origin_minus_bed = os.path.join(os.path.dirname(__file__), "data/", "GSM3003539_minus.g4seqFirst.F0.1.ex1000.origin.bed")
+    else:
+        origin_minus_bed = args.minusOrigin
+
+    if args.plusOrigin is None:
+        origin_plus_bed = os.path.join(os.path.dirname(__file__), "data/", "GSM3003539_plus.g4seqFirst.F0.1.ex1000.origin.bed")
+    else:
+        origin_plus_bed = args.plusOrigin
 
     if not os.path.isdir(args.workdir):
         os.makedirs(args.workdir)
 
     # Pos/neg sample division
     print("----- pos/neg sample division START -----")
-    origin_minus_bed = os.path.join(os.path.dirname(__file__), "data/", "GSM3003539_minus.g4seqFirst.F0.1.ex1000.origin.bed")
-    origin_plus_bed = os.path.join(os.path.dirname(__file__), "data/", "GSM3003539_plus.g4seqFirst.F0.1.ex1000.origin.bed")
     runShellCmd(
         (f"bedtools intersect -a {origin_minus_bed} -b {args.vg4}"
          "-wa -F 0.1 | sort -k1,1 -k2,2n -u > "

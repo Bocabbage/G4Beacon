@@ -4,10 +4,18 @@
 # Author: Zhuofan Zhang
 # Update date: 2021/12/20
 import os
-import time
-import logging
-import functools
+import stat
 import subprocess
+
+
+def isWritable(dirname):
+    uid = os.geteuid()
+    gid = os.getegid()
+    s = os.stat(dirname)
+    mode = s[stat.ST_MODE]
+    return (
+        ((s[stat.ST_UID] == uid) and (mode & stat.S_IWUSR)) or ((s[stat.ST_GID] == gid) and (mode & stat.S_IWGRP)) or (mode & stat.S_IWOTH)
+    )
 
 
 def joinPath(firstpath, secondpath):
@@ -32,9 +40,9 @@ def runShellCmd(cmd):
     # p.wait()
     stdout, stderr = [x.decode('utf-8') for x in p.communicate(bytes(cmd, 'utf-8'))]
     if stderr:
-        print("Error occurs in cmd: {}".format(cmd))
+        print(f"Error occurs in cmd: {cmd}")
         print("STDERR OUTPUT:")
         print(stderr)
-        exit(-1)
+        return None, stderr
 
-    return stdout, stderr
+    return stdout, None
